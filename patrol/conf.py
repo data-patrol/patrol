@@ -1,8 +1,10 @@
 import os
 import errno
 import logging
-
+from time import strftime
 import configparser
+
+# Setting default config and reading config file (if exists)
 
 DEFAULT_CONFIG = """\
 [core]
@@ -11,13 +13,6 @@ checks_folder = {PATROL_HOME}/checks
 log_folder = {PATROL_HOME}/logs
 executor = SequentialExecutor
 """
-
-conf = configparser.ConfigParser()
-
-'''
-Setting PATROL_HOME and PATROL_CONFIG from environment variables, using
-"~/patrol" and "~/patrol/patrol.cfg" as defaults.
-'''
 
 if 'PATROL_HOME' not in os.environ:
     PATROL_HOME = os.path.expanduser('~/patrol')
@@ -51,3 +46,20 @@ if not os.path.isfile(PATROL_CONFIG):
 
 logging.info("Reading the config from " + PATROL_CONFIG)
 conf.read(PATROL_CONFIG)
+
+
+# Setting up logging
+
+directory = conf.get('core', 'LOG_FOLDER')
+if not os.path.exists(directory):
+    os.makedirs(directory)
+
+log_file = '{}/app_{}.log'.format(directory, strftime('%Y-%m-%d'))
+log_format =  \
+    "[%(asctime)s] %(levelname)s - %(message)s  [%(pathname)s %(funcName)s %(lineno)d]"
+
+logging.basicConfig(
+    filename=log_file, level=logging.INFO, format=log_format, force=True)
+
+print("Logging into: " + log_file)
+logging.info("Logging into: " + log_file)

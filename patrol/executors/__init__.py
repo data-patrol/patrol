@@ -2,6 +2,8 @@ import logging
 
 from patrol.conf import conf
 
+log = logging.getLogger(__name__)
+
 _EXECUTOR = conf.get('core', 'EXECUTOR')
 
 if _EXECUTOR == 'LocalExecutor':
