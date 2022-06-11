@@ -1,0 +1,51 @@
+import os 
+import sys
+import logging
+
+# TODO: This is just a temp work-around that adds parent project directory to sys.path
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path+'/../..')
+
+from patrol.conf import conf
+from patrol.executors import DEFAULT_EXECUTOR
+
+from patrol.checks import sql_check
+from patrol.check_groups import simple_check_group
+
+if __name__ == '__main__':
+
+    # Print header
+    HEADER = """\
+        .______      ___   .___________.______       ______    __      
+    |   _  \    /   \  |           |   _  \     /  __  \  |  |     
+    |  |_)  |  /  ^  \ `---|  |----|  |_)  |   |  |  |  | |  |     
+    |   ___/  /  /_\  \    |  |    |      /    |  |  |  | |  |     
+    |  |     /  _____  \   |  |    |  |\  \----|  `--'  | |  `----.
+    | _|    /__/     \__\  |__|    | _| `._____|\______/  |_______|
+     """
+    print(HEADER)
+    
+    # Setting up logging
+    directory = conf.get('core', 'LOG_FOLDER')
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    filename = "{directory}/default.log".format(**locals())
+
+    log_format =  \
+        '[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s'
+    
+    logging.basicConfig(
+        filename=filename, level=logging.INFO, format=log_format, force=True)
+    
+    print("Logging into: " + filename)
+    logging.info("Logging into: " + filename)
+
+    # TODO: some tests
+    sql_check_1 = sql_check.SqlCheck(1, "SELECT 1")
+    sql_check_2 = sql_check.SqlCheck(2, "SELECT 2")
+    
+    check_group = simple_check_group.SimpleCheckGroup(1, "sample_group")
+    check_group.add_check(sql_check_1)
+    check_group.add_check(sql_check_2)
+    
+    

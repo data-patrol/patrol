@@ -1,5 +1,4 @@
-import logging
-
 class BaseExecutor(object):
-    def test(self):
-        return "OK"
+    """
+    Base Executor class that should be inherited by all executor implementation classes
+    """

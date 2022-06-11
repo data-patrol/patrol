@@ -1,5 +1,3 @@
-import logging
-
 from patrol.executors.base_executor import BaseExecutor
 
 class SequentialExecutor(BaseExecutor):
