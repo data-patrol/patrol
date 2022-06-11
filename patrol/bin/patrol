@@ -9,8 +9,8 @@ sys.path.append(dir_path+'/../..')
 from patrol.conf import conf
 from patrol.executors import DEFAULT_EXECUTOR
 
-from patrol.checks import sql_check
-from patrol.check_groups import simple_check_group
+from patrol import check_groups, checks
+from patrol import jobs
 
 if __name__ == '__main__':
 
@@ -41,11 +41,14 @@ if __name__ == '__main__':
     logging.info("Logging into: " + filename)
 
     # TODO: some tests
-    sql_check_1 = sql_check.SqlCheck(1, "SELECT 1")
-    sql_check_2 = sql_check.SqlCheck(2, "SELECT 2")
+    sql_check_1 = checks.SqlCheck(1, "SELECT 1")
+    sql_check_2 = checks.SqlCheck(2, "SELECT 2")
     
-    check_group = simple_check_group.SimpleCheckGroup(1, "sample_group")
+    check_group = check_groups.SimpleCheckGroup(1, "sample_group")
     check_group.add_check(sql_check_1)
     check_group.add_check(sql_check_2)
+
+    job = jobs.SimpleJob(check_group)
+    job.run() 
     
     
