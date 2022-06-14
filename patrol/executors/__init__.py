@@ -2,14 +2,12 @@ import logging
 
 from patrol.conf import conf
 
-log = logging.getLogger(__name__)
-
 _EXECUTOR = conf.get('core', 'EXECUTOR')
 
-if _EXECUTOR == 'LocalExecutor':
-    DEFAULT_EXECUTOR = LocalExecutor()
-elif _EXECUTOR == 'CeleryExecutor':
-    DEFAULT_EXECUTOR = CeleryExecutor()
+if _EXECUTOR == 'ParallelExecutor':
+    #TODO: Not implemented
+    #from patrol.executors.parallel_executor import ParallelExecutor  
+    DEFAULT_EXECUTOR = ParallelExecutor()
 elif _EXECUTOR == 'SequentialExecutor':
     from patrol.executors.sequential_executor import SequentialExecutor
     DEFAULT_EXECUTOR = SequentialExecutor()
@@ -20,3 +18,4 @@ logging.info("Using executor " + _EXECUTOR)
 
 def get_default_executor():
     return DEFAULT_EXECUTOR
+ 

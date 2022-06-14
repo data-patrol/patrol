@@ -1,3 +1,5 @@
+from patrol import executors
+
 class BaseCheck(object):
     """
     Base Check class that should be inherited by all types of DQ check classes

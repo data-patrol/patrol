@@ -1,6 +1,8 @@
 import os 
 import sys
 import logging
+import sqlite3
+import argparse
 
 # TODO: This is just a temp work-around that adds parent project directory to sys.path
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -11,29 +13,57 @@ from patrol.executors import DEFAULT_EXECUTOR
 
 from patrol import check_groups, checks
 from patrol import jobs
+from patrol import executors
 
 if __name__ == '__main__':
 
-    # Print header
-    HEADER = """\
-        .______      ___   .___________.______       ______    __      
-    |   _  \    /   \  |           |   _  \     /  __  \  |  |     
-    |  |_)  |  /  ^  \ `---|  |----|  |_)  |   |  |  |  | |  |     
-    |   ___/  /  /_\  \    |  |    |      /    |  |  |  | |  |     
-    |  |     /  _____  \   |  |    |  |\  \----|  `--'  | |  `----.
-    | _|    /__/     \__\  |__|    | _| `._____|\______/  |_______|
-     """
-    print(HEADER)
-    
-    # TODO: some tests
-    sql_check_1 = checks.SqlCheck(1, "SELECT 1")
-    sql_check_2 = checks.SqlCheck(2, "SELECT 2")
-    
-    check_group = check_groups.SimpleCheckGroup(1, "sample_group")
-    check_group.add_check(sql_check_1)
-    check_group.add_check(sql_check_2)
+    def print_header():
+        HEADER = """\
+            .______      ___   .___________.______       ______    __      
+        |   _  \    /   \  |           |   _  \     /  __  \  |  |     
+        |  |_)  |  /  ^  \ `---|  |----|  |_)  |   |  |  |  | |  |     
+        |   ___/  /  /_\  \    |  |    |      /    |  |  |  | |  |     
+        |  |     /  _____  \   |  |    |  |\  \----|  `--'  | |  `----.
+        | _|    /__/     \__\  |__|    | _| `._____|\______/  |_______|
+        """
+        print(HEADER)
 
-    job = jobs.SimpleJob(check_group)
-    job.run() 
-    
+    def test(args):
+        # Tests
+        print_header()
+
+        connection = sqlite3.connect("consumerdb.db")
+        cursor = connection.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS customers (customer_id INT, first_name TEXT, last_name TEXT)")
+        cursor.execute("DELETE FROM customers")
+        cursor.execute("INSERT INTO customers SELECT 1, 'Jeff', 'Smith'")
+        cursor.execute("INSERT INTO customers SELECT 2, 'Bill', NULL")
+
+        cursor.execute("CREATE TABLE IF NOT EXISTS orders (order_id INT, customer_id INT, order_descr TEXT, order_amt NUMERIC)")
+        cursor.execute("DELETE FROM orders")
+        cursor.execute("INSERT INTO orders SELECT 10010, 1, 'Service Q1', 500")
+        cursor.execute("INSERT INTO orders SELECT 10011, 1, 'Service Q1', 500")
+        cursor.execute("INSERT INTO orders SELECT 10012, 1, 'Service Q1', NULL")
+        cursor.execute("INSERT INTO orders SELECT 10014, 3, 'Service Q3', 800")
+
+        # Tests: Create sample checks
+        sql_check_1 = checks.SqlCheck("sql_check_1", "SELECT 1")
+        sql_check_2 = checks.SqlCheck("sql_check_2", "SELECT 2")
+        
+        # Tests: Create and run a job
+        job = jobs.OnDemandJob()
+        job.add_check_to_job(sql_check_1)
+        job.add_check_to_job(sql_check_2)
+        job.run()
+
+    def run(args):
+        print_header()
+
+    function_map = {'test' : test,
+                'run' : run }
+
+    if len(sys.argv) > 1:
+        if sys.argv[1] in function_map:
+            func = function_map[sys.argv[1]]
+            func(sys.argv)
     

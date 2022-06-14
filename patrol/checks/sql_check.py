@@ -9,4 +9,5 @@ class SqlCheck(BaseCheck):
             check_id,
             check_sql):
         super(SqlCheck, self).__init__(check_id, check_sql)
+
         
