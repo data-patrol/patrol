@@ -17,7 +17,7 @@ class CheckInstance(object):
 
         # TODO: Just drafting the very first prototype
 
-        log.info("---------------------------------------------------------------------------")
+        log.info("===>")
         log.info("Running check: %s", check.check_id)
         conn = sqlite3.connect("consumerdb.db")
 
