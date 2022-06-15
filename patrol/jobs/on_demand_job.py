@@ -19,9 +19,3 @@ class OnDemandJob(BaseJob):
         self.executor.start()
         self.executor.execute_sync()
 
-    
-        
-        
-
-
-

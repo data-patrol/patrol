@@ -11,7 +11,7 @@ sys.path.append(dir_path+'/../..')
 from patrol.conf import conf
 from patrol.executors import DEFAULT_EXECUTOR
 
-from patrol import check_groups, checks
+from patrol import checks
 from patrol import jobs
 from patrol import executors
 
@@ -28,10 +28,9 @@ if __name__ == '__main__':
         """
         print(HEADER)
 
-    def test(args):
-        # Tests
-        print_header()
-
+    #TODO: This function is temporary here for running tests
+    def create_test_checks():
+        # Test: Create sample data
         connection = sqlite3.connect("consumerdb.db")
         cursor = connection.cursor()
         cursor.execute("CREATE TABLE IF NOT EXISTS customers (customer_id INT, first_name TEXT, last_name TEXT)")
@@ -46,24 +45,42 @@ if __name__ == '__main__':
         cursor.execute("INSERT INTO orders SELECT 10012, 1, 'Service Q1', NULL")
         cursor.execute("INSERT INTO orders SELECT 10014, 3, 'Service Q3', 800")
 
-        # Tests: Create sample checks
+        # Test: Create sample checks
         sql_check_1 = checks.SqlCheck("sql_check_1", "SELECT 1")
         sql_check_2 = checks.SqlCheck("sql_check_2", "SELECT 2")
+
+        # Test: Add checks to CheckRegistry
+        # this is a temp hack, as checks auto discovery is not yet implemented
+        global_check_registry.add_check(sql_check_1)
+        global_check_registry.add_check(sql_check_2)
+    
+    #TODO: This function is temporary here for running tests
+    def test(args):
+        print_header()
         
-        # Tests: Create and run a job
+        # Test: Create and run an on-demand job
         job = jobs.OnDemandJob()
-        job.add_check_to_job(sql_check_1)
-        job.add_check_to_job(sql_check_2)
+        job.add_check_to_job(global_check_registry.checks["sql_check_1"])
+        job.add_check_to_job(global_check_registry.checks["sql_check_2"])
         job.run()
 
     def run(args):
         print_header()
+        if len(sys.argv) > 2:
+            # Get check from CheckRegistry
+            check = global_check_registry.checks[sys.argv[2]]
+            print("Retrieved the following check from CheckRegistry:", check.check_id)
+            
+            # Create and run CheckInstance
+            #     
 
-    function_map = {'test' : test,
-                'run' : run }
+    global_check_registry = checks.CheckRegistry()  #TODO: temp
+    create_test_checks()  #TODO: temp
+
+    function_map = {'test' : test, 
+                    'run' : run }
 
     if len(sys.argv) > 1:
         if sys.argv[1] in function_map:
             func = function_map[sys.argv[1]]
             func(sys.argv)
-    
