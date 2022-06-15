@@ -1,4 +1,8 @@
+import logging
+
 from patrol.checks.check_types.base_check import BaseCheck
+
+log = logging.getLogger(__name__)
 
 class BaseExecutor(object):
     """
@@ -9,6 +13,7 @@ class BaseExecutor(object):
         self.queued_commands = {}
 
     def start(self):
+        log.info("Starting executor: %s", self.__class__.__name__)
         pass
 
     def add_command_to_queue(self, key, command):

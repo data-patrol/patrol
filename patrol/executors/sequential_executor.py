@@ -1,6 +1,9 @@
+import logging
 import subprocess
 
 from patrol.executors.base_executor import BaseExecutor
+
+log = logging.getLogger(__name__)
 
 class SequentialExecutor(BaseExecutor):
     def __init__(self):
@@ -8,7 +11,7 @@ class SequentialExecutor(BaseExecutor):
 
     def execute_sync(self):
         for key,command in self.queued_commands.items():
-            print("Executing command: ", command)
+            log.info("Executing command: %s", command)
             try:
                 sp = subprocess.Popen(command, shell=True).wait()
             except Exception as e:

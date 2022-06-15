@@ -1,10 +1,14 @@
+import logging
 import sqlite3
 import textwrap
+
+log = logging.getLogger(__name__)
+
 class CheckInstance(object):
     """
     CheckRegistry implements an instance of a (running) check
     """
-    
+
     def __init__(self, check):
         self.check = check
 
@@ -13,21 +17,20 @@ class CheckInstance(object):
 
         # TODO: Just drafting the very first prototype
 
-        print("---------------------------------------------------------------------------")
-        print("Running check: ", check.check_id)
+        log.info("---------------------------------------------------------------------------")
+        log.info("Running check: %s", check.check_id)
         conn = sqlite3.connect("consumerdb.db")
 
         with conn:
             cursor = conn.cursor()
 
             sql = textwrap.dedent(check.check_sql)
-            print("Running the following SQL query: ", sql)
+            log.info("Running the following SQL query: %s", sql)
             cursor.execute(check.check_sql)
-
             
-            print("Check results are the following: ")
+            log.info("Check results are the following: ")
             names = list(map(lambda x: x[0], cursor.description))
-            print(names)
+            log.info(names)
             rows = cursor.fetchall()
             for row in rows:
-                print(row)
+                log.info(row)

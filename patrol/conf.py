@@ -1,4 +1,5 @@
 import os
+import sys
 import errno
 import logging
 from time import strftime
@@ -56,10 +57,30 @@ if not os.path.exists(directory):
 
 log_file = '{}/app_{}.log'.format(directory, strftime('%Y-%m-%d'))
 log_format =  \
-    "[%(asctime)s] %(levelname)s - %(message)s  [%(pathname)s %(funcName)s %(lineno)d]"
+    "[%(asctime)s] %(levelname)s - %(message)s  [%(name)s %(pathname)s %(lineno)d]"
 
 logging.basicConfig(
     filename=log_file, level=logging.INFO, format=log_format, force=True)
 
-print("Logging into: " + log_file)
+# Set up logging to console
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+
+# Set a format which better fits console
+formatter = logging.Formatter('[%(asctime)s] %(levelname)-8s: %(message)s', "%H:%M:%S")
+console.setFormatter(formatter)
+logging.getLogger('').addHandler(console)
 logging.info("Logging into: " + log_file)
+
+#Creating a handler for unhandled exceptions
+def handle_unhandled_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        # Will call default excepthook
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    #Create a critical level log message with info from the except hook.
+    logging.critical("Unhandled exception: ", exc_info=(exc_type, exc_value, exc_traceback))
+
+# Assign the excepthook to the handler
+sys.excepthook = handle_unhandled_exception

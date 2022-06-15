@@ -14,8 +14,6 @@ elif _EXECUTOR == 'SequentialExecutor':
 else:
     raise Exception("Executor {0} not supported.".format(_EXECUTOR))
 
-logging.info("Using executor " + _EXECUTOR)
-
 def get_default_executor():
     return DEFAULT_EXECUTOR
  
