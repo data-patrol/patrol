@@ -1,3 +1,5 @@
+import subprocess
+
 from patrol.executors.base_executor import BaseExecutor
 
 class SequentialExecutor(BaseExecutor):
@@ -5,6 +7,9 @@ class SequentialExecutor(BaseExecutor):
         super(SequentialExecutor, self).__init__()
 
     def execute_sync(self):
-        for key in self.queued_checks:
-            print("Executing check: ", str(key))
-
+        for key,command in self.queued_commands.items():
+            print("Executing command: ", command)
+            try:
+                sp = subprocess.Popen(command, shell=True).wait()
+            except Exception as e:
+                raise e

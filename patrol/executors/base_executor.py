@@ -6,13 +6,13 @@ class BaseExecutor(object):
     """
 
     def __init__(self):
-        self.queued_checks = {}
+        self.queued_commands = {}
 
     def start(self):
         pass
 
-    def add_check_to_queue(self, check):
-        self.queued_checks[check.check_id] = check
+    def add_command_to_queue(self, key, command):
+        self.queued_commands[key] = command
 
     def execute_sync(self):
         raise NotImplementedError("This method needs to be overridden")

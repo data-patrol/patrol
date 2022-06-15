@@ -13,7 +13,8 @@ class OnDemandJob(BaseJob):
         super(OnDemandJob, self).__init__()
 
     def add_check_to_job(self, check):
-        self.executor.add_check_to_queue(check)    
+        command = "python3 patrol run " + check.check_id
+        self.executor.add_command_to_queue(check.check_id, command)    
     
     def _run(self):
         self.executor.start()

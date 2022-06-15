@@ -28,33 +28,71 @@ if __name__ == '__main__':
         """
         print(HEADER)
 
-    #TODO: This function is temporary here for running tests
+    #TODO: This is a temporary function for running tests
+    def create_test_data():
+        conn = sqlite3.connect("consumerdb.db")
+
+        with conn:
+            cursor = conn.cursor()
+            cursor.execute("CREATE TABLE IF NOT EXISTS customers (customer_id INT, first_name TEXT, last_name TEXT)")
+            cursor.execute("DELETE FROM customers")
+            cursor.execute("INSERT INTO customers SELECT 1, 'Jeff', 'Smith'")
+            cursor.execute("INSERT INTO customers SELECT 24, 'Bill', NULL")
+
+            cursor.execute("CREATE TABLE IF NOT EXISTS orders (order_id INT, customer_id INT, order_descr TEXT, order_amt NUMERIC)")
+            cursor.execute("DELETE FROM orders")
+            cursor.execute("INSERT INTO orders SELECT 10010, 1, 'Service Q1', 500")
+            cursor.execute("INSERT INTO orders SELECT 10011, 1, 'Service Q1', 500")
+            cursor.execute("INSERT INTO orders SELECT 10012, 1, 'Service Q1', NULL")
+            cursor.execute("INSERT INTO orders SELECT 10014, 209, 'Service Q3', 800")
+            cursor.execute("INSERT INTO orders SELECT 10014, 577, 'Service Q3', 800")
+            cursor.execute("INSERT INTO orders SELECT 10014, 591, 'Service Q3', 800")
+            cursor.execute("INSERT INTO orders SELECT 10014, 1024, 'Service Q3', 800")
+
+    #TODO: This is a temporary function for running tests
     def create_test_checks():
-        # Test: Create sample data
-        connection = sqlite3.connect("consumerdb.db")
-        cursor = connection.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS customers (customer_id INT, first_name TEXT, last_name TEXT)")
-        cursor.execute("DELETE FROM customers")
-        cursor.execute("INSERT INTO customers SELECT 1, 'Jeff', 'Smith'")
-        cursor.execute("INSERT INTO customers SELECT 2, 'Bill', NULL")
+        sql_check_1 = checks.SqlCheck("sql_check_1", 
+                                        """
+                                            SELECT 
+                                                CASE 
+                                                    WHEN row_count = 0 THEN 0
+                                                    ELSE 2
+                                                END as result, 
+                                                *
+                                            FROM
+                                            (
+                                                SELECT 
+                                                    COUNT(*) OVER () as row_count,
+                                                    * 
+                                                FROM orders ord
+                                                LEFT JOIN customers cus ON ord.customer_id = cus.customer_id
+                                                WHERE cus.customer_id IS NULL
+                                            )
+                                        """)
+        sql_check_2 = checks.SqlCheck("sql_check_2",
+                                        """
+                                            SELECT 
+                                                CASE 
+                                                    WHEN row_count = 0 THEN 0
+                                                    ELSE 2
+                                                END as result, 
+                                                *
+                                            FROM
+                                            (
+                                                SELECT 
+                                                    COUNT(*) OVER () as row_count,
+                                                    * 
+                                                FROM customers cus
+                                                WHERE cus.first_name IS NULL OR cus.last_name IS NULL
+                                            )
+                                        """)
 
-        cursor.execute("CREATE TABLE IF NOT EXISTS orders (order_id INT, customer_id INT, order_descr TEXT, order_amt NUMERIC)")
-        cursor.execute("DELETE FROM orders")
-        cursor.execute("INSERT INTO orders SELECT 10010, 1, 'Service Q1', 500")
-        cursor.execute("INSERT INTO orders SELECT 10011, 1, 'Service Q1', 500")
-        cursor.execute("INSERT INTO orders SELECT 10012, 1, 'Service Q1', NULL")
-        cursor.execute("INSERT INTO orders SELECT 10014, 3, 'Service Q3', 800")
-
-        # Test: Create sample checks
-        sql_check_1 = checks.SqlCheck("sql_check_1", "SELECT 1")
-        sql_check_2 = checks.SqlCheck("sql_check_2", "SELECT 2")
-
-        # Test: Add checks to CheckRegistry
-        # this is a temp hack, as checks auto discovery is not yet implemented
+        # Add checks to CheckRegistry
+        # this is a temp hack, we will implement checks auto discovery and load from JSON files
         global_check_registry.add_check(sql_check_1)
         global_check_registry.add_check(sql_check_2)
     
-    #TODO: This function is temporary here for running tests
+    #TODO: This is a temporary function for running tests
     def test(args):
         print_header()
         
@@ -63,18 +101,21 @@ if __name__ == '__main__':
         job.add_check_to_job(global_check_registry.checks["sql_check_1"])
         job.add_check_to_job(global_check_registry.checks["sql_check_2"])
         job.run()
+        print("DONE!")
 
     def run(args):
-        print_header()
         if len(sys.argv) > 2:
             # Get check from CheckRegistry
             check = global_check_registry.checks[sys.argv[2]]
             print("Retrieved the following check from CheckRegistry:", check.check_id)
             
             # Create and run CheckInstance
-            #     
+            check_instance = checks.CheckInstance(check)
+            check_instance.run()
+
 
     global_check_registry = checks.CheckRegistry()  #TODO: temp
+    create_test_data()    #TODO: temp
     create_test_checks()  #TODO: temp
 
     function_map = {'test' : test, 
