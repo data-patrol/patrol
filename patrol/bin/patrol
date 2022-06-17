@@ -47,52 +47,80 @@ def create_test_data(): #TODO
         cursor.execute("INSERT INTO orders SELECT 10010, 1, 'Service Q1', 500")
         cursor.execute("INSERT INTO orders SELECT 10011, 1, 'Service Q1', 500")
         cursor.execute("INSERT INTO orders SELECT 10012, 1, 'Service Q1', NULL")
-        cursor.execute("INSERT INTO orders SELECT 10014, 209, 'Service Q3 - Subservice 200041.10', 800")
+        cursor.execute("INSERT INTO orders SELECT 10014, 209, 'Service Q3', 800")
         cursor.execute("INSERT INTO orders SELECT 10014, 577, 'Service Q3', 800")
         cursor.execute("INSERT INTO orders SELECT 10014, 591, 'Service Q3', 800")
         cursor.execute("INSERT INTO orders SELECT 10014, 1024, 'Service Q3', 800")
 
 def create_test_checks(): #TODO
+    ## connection ###
     conn = class_lib.Connection("MySQLiteConn1", "consumerdb.db", "Sqlite")
 
-    sql_check_1 = checks.SqlCheck("sql_check_1", 
-                                    """
+    ### sql_check_1 ###
+    sql_check_1 = checks.SqlCheck("sql_check_1")
+    step_1 = checks.CheckStep("step_1",
+                                 """
+                                    SELECT 
+                                        CASE 
+                                            WHEN row_count = 0 THEN 0
+                                            ELSE 2
+                                        END as result, 
+                                        *
+                                    FROM
+                                    (
                                         SELECT 
-                                            CASE 
-                                                WHEN row_count = 0 THEN 0
-                                                ELSE 2
-                                            END as result, 
-                                            *
-                                        FROM
-                                        (
-                                            SELECT 
-                                                COUNT(*) OVER () as row_count,
-                                                * 
-                                            FROM orders ord
-                                            LEFT JOIN customers cus ON ord.customer_id = cus.customer_id
-                                            WHERE cus.customer_id IS NULL
-                                        )
-                                    """,
-                                    conn)
+                                            COUNT(*) OVER () as row_count,
+                                            * 
+                                        FROM orders ord
+                                        LEFT JOIN customers cus ON ord.customer_id = cus.customer_id
+                                        WHERE cus.customer_id IS NULL
+                                    )
+                                """,
+                                conn)
+    sql_check_1.add_step(step_1)
 
-    sql_check_2 = checks.SqlCheck("sql_check_2",
-                                    """
+    ### sql_check_2 ###
+    sql_check_2 = checks.SqlCheck("sql_check_2")
+    step_1 = checks.CheckStep("1",
+                                 """
+                                    SELECT 
+                                        CASE 
+                                            WHEN row_count = 0 THEN 0
+                                            ELSE 2
+                                        END as result, 
+                                        *
+                                    FROM
+                                    (
                                         SELECT 
-                                            CASE 
-                                                WHEN row_count = 0 THEN 0
-                                                ELSE 2
-                                            END as result, 
-                                            *
-                                        FROM
-                                        (
-                                            SELECT 
-                                                COUNT(*) OVER () as row_count,
-                                                * 
-                                            FROM customers cus
-                                            WHERE cus.first_name IS NULL OR cus.last_name IS NULL
-                                        )
-                                    """,
-                                    conn)
+                                            COUNT(*) OVER () as row_count,
+                                            * 
+                                        FROM orders ord
+                                        LEFT JOIN customers cus ON ord.customer_id = cus.customer_id
+                                        WHERE cus.customer_id IS NULL
+                                    )
+                                """,
+                                conn)
+
+    step_2 = checks.CheckStep("2",
+                                """
+                                    SELECT 
+                                        CASE 
+                                            WHEN row_count = 0 THEN 0
+                                            ELSE 2
+                                        END as result, 
+                                        *
+                                    FROM
+                                    (
+                                        SELECT 
+                                            COUNT(*) OVER () as row_count,
+                                            * 
+                                        FROM customers cus
+                                        WHERE cus.first_name IS NULL OR cus.last_name IS NULL
+                                    )
+                                """,
+                                conn)
+    sql_check_2.add_step(step_1)
+    sql_check_2.add_step(step_2)
 
     # Add checks to CheckRegistry
     # this is a temp hack, we will implement checks auto discovery and load from JSON files

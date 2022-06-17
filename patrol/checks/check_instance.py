@@ -28,45 +28,51 @@ class CheckInstance(object):
         
         log.info("===>")
         log.info("Running check: %s", check.check_id)
-
-        connector_name = check.connection.connector_name
-        log.info("Attempting to plug in the following connector: %s", connector_name)
-        connector = ConnectorFactory().get_connector(connector_name)
         
-        query = textwrap.dedent(check.check_sql)
-        log.info("The following query will be executed: %s", query)
-        df = connector.get_pandas_df(check.check_sql, check.connection)
+        # Executing check steps
+        for step_id, step in check.steps.items():
+            log.info("===>")
+            log.info("Running step: %s", step_id)        
+            log.info("===>")
 
-        log.info("Check result is the following (first 10 rows): \n %s", 
-                df.head(10).to_string(index=False))
+            connector_name = step.connection.connector_name
+            log.info("Attempting to plug in the following connector: %s", connector_name)
+            connector = ConnectorFactory().get_connector(connector_name)
 
-        # Save report to Excel file
-        # report_dir = '{}/{}'.format(conf.get('core', 'REPORTS_FOLDER'), strftime('%Y-%m-%d'))
-        # report_file = '/{}__{}__{}.xlsx'.format(check.check_id, strftime('%H%M%S'), self.guid)
-        # report_file = report_dir + report_file
+            query = textwrap.dedent(step.query)
+            log.info("The following query will be executed: %s", query)
+            df = connector.get_pandas_df(step.query, step.connection)
 
-        # if not os.path.exists(report_dir):
-        #     os.makedirs(report_dir)
-        
-        # log.info("Saving detailed report to Excel file: %s", report_file)
+            log.info("Step result is the following (first 10 rows): \n %s", 
+                    df.head(10).to_string(index=False))
 
-        # # Configure proper column width in Excel depending on actual values
-        # writer = pd.ExcelWriter(report_file) 
-        # df.to_excel(writer, sheet_name='Report', index=False)  # may consider na_rep='NaN'
+            # Save report to Excel file
+            # report_dir = '{}/{}'.format(conf.get('core', 'REPORTS_FOLDER'), strftime('%Y-%m-%d'))
+            # report_file = '/{}__{}__{}.xlsx'.format(check.check_id, strftime('%H%M%S'), self.guid)
+            # report_file = report_dir + report_file
 
-        # for column in df:
-        #     column_length = max(df[column].astype(str).map(len).max(), len(column))
-        #     col_idx = df.columns.get_loc(column)
-        #     writer.sheets['Report'].set_column(col_idx, col_idx, column_length)
-        # writer.save()
+            # if not os.path.exists(report_dir):
+            #     os.makedirs(report_dir)
+            
+            # log.info("Saving detailed report to Excel file: %s", report_file)
 
-        # Save report to CSV file
-        report_dir = '{}/{}'.format(conf.get('core', 'REPORTS_FOLDER'), strftime('%Y-%m-%d'))
-        report_file = '/{}__{}__{}.csv'.format(check.check_id, strftime('%H%M%S'), self.guid)
-        report_file = report_dir + report_file
+            # # Configure proper column width in Excel depending on actual values
+            # writer = pd.ExcelWriter(report_file) 
+            # df.to_excel(writer, sheet_name='Report', index=False)  # may consider na_rep='NaN'
 
-        if not os.path.exists(report_dir):
-            os.makedirs(report_dir)
-        
-        log.info("Saving detailed report to Excel file: %s", report_file)
-        df.to_csv(report_file, sep = '\t', index=False)
+            # for column in df:
+            #     column_length = max(df[column].astype(str).map(len).max(), len(column))
+            #     col_idx = df.columns.get_loc(column)
+            #     writer.sheets['Report'].set_column(col_idx, col_idx, column_length)
+            # writer.save()
+
+            # Save detailed report to CSV file
+            report_dir = '{}/{}'.format(conf.get('core', 'REPORTS_FOLDER'), strftime('%Y-%m-%d'))
+            report_file = '/{}__{}__{}__{}.csv'.format(check.check_id, step.step_id, strftime('%H%M%S'), self.guid)
+            report_file = report_dir + report_file
+
+            if not os.path.exists(report_dir):
+                os.makedirs(report_dir)
+            
+            log.info("Saving detailed report to file: %s", report_file)
+            df.to_csv(report_file, sep = '\t', index=False)

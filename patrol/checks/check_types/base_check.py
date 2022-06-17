@@ -1,15 +1,11 @@
-from patrol import executors
-
+from patrol.checks.check_types.check_step import CheckStep
 class BaseCheck(object):
     """
     Base Check class that should be inherited by all types of DQ check classes
     """
-    def __init__(
-            self,
-            check_id,
-            check_sql,
-            connection
-            ):
+    def __init__(self,check_id):
+        self.steps = {}
         self.check_id = check_id
-        self.check_sql = check_sql
-        self.connection = connection
+
+    def add_step(self, step):
+        self.steps[step.step_id] = step

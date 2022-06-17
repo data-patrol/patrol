@@ -6,10 +6,9 @@ class SqlCheck(BaseCheck):
     """
     def __init__(
             self,
-            check_id,
-            check_sql,
-            connection
+            check_id
             ):
-        super(SqlCheck, self).__init__(check_id, check_sql, connection)
+        super(SqlCheck, self).__init__(check_id)
+        
 
         
