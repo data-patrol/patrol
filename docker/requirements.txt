@@ -1,2 +1,4 @@
 configparser
+pandas
+sqlite3
 flask
