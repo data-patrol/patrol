@@ -7,6 +7,9 @@ class BaseCheck(object):
     def __init__(
             self,
             check_id,
-            check_sql):
+            check_sql,
+            connection
+            ):
         self.check_id = check_id
         self.check_sql = check_sql
+        self.connection = connection

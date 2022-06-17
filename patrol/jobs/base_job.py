@@ -5,9 +5,7 @@ class BaseJob(object):
     Base CheckGroup class that should be inherited by all types of jobs
     """
 
-    def __init__(
-            self,
-            executor=None):
+    def __init__(self, executor=None):
         self.executor = executor or executors.get_default_executor()
         self.executor_class = self.executor.__class__.__name__
 

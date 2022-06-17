@@ -7,7 +7,9 @@ class SqlCheck(BaseCheck):
     def __init__(
             self,
             check_id,
-            check_sql):
-        super(SqlCheck, self).__init__(check_id, check_sql)
+            check_sql,
+            connection
+            ):
+        super(SqlCheck, self).__init__(check_id, check_sql, connection)
 
         

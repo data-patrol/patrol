@@ -1,6 +1,10 @@
 import logging
-import sqlite3
 import textwrap
+import pandas as pd
+
+from patrol import checks
+from patrol.connectors.connector_factory import ConnectorFactory
+
 
 log = logging.getLogger(__name__)
 
@@ -16,21 +20,18 @@ class CheckInstance(object):
         check = self.check
 
         # TODO: Just drafting the very first prototype
-
+        # Code below needs to be rewritten
+        
         log.info("===>")
         log.info("Running check: %s", check.check_id)
-        conn = sqlite3.connect("consumerdb.db")
 
-        with conn:
-            cursor = conn.cursor()
+        connector_name = check.connection.connector_name
+        log.info("Attempting to plug in the following connector: %s", connector_name)
+        connector = ConnectorFactory().get_connector(connector_name)
+        
+        query = textwrap.dedent(check.check_sql)
+        log.info("The following query will be executed: %s", query)
+        df = connector.get_pandas_df(check.check_sql, check.connection)
 
-            sql = textwrap.dedent(check.check_sql)
-            log.info("Running the following SQL query: %s", sql)
-            cursor.execute(check.check_sql)
-            
-            log.info("Check results are the following: ")
-            names = list(map(lambda x: x[0], cursor.description))
-            log.info(names)
-            rows = cursor.fetchall()
-            for row in rows:
-                log.info(row)
+        log.info("Check result is the following (first 10 rows): ")
+        log.info(df.head(10))

@@ -66,7 +66,7 @@ logging.basicConfig(
 console = logging.StreamHandler()
 console.setLevel(logging.INFO)
 
-# Set a format which better fits console
+# Set format which better fits console
 formatter = logging.Formatter('[%(asctime)s] %(levelname)-8s: %(message)s', "%H:%M:%S")
 console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)

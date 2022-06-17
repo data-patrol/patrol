@@ -1,0 +1,14 @@
+{
+    "Sqlite": [
+        {
+            "connector.module": "patrol.connectors.sqlite_connector",
+            "connector.class":"SqliteConnector"
+        }
+    ],
+    "Jdbc": [
+        {
+            "connector.module": "patrol.connectors.jdbc_connector",
+            "connector.class":"JdbcConnector"
+        }
+    ]
+}
