@@ -1,8 +1,5 @@
 import sys
 import json
-import logging
-
-log = logging.getLogger(__name__)
 
 class ConnectorFactory:
     """

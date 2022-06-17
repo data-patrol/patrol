@@ -11,7 +11,8 @@ class SequentialExecutor(BaseExecutor):
 
     def execute_sync(self):
         for key,command in self.queued_commands.items():
-            log.info("Executing command: %s", command)
+            log.info("===>")
+            log.info("Executor: Executing command: %s", command)
             try:
                 sp = subprocess.Popen(command, shell=True).wait()
             except Exception as e:

@@ -33,5 +33,5 @@ class CheckInstance(object):
         log.info("The following query will be executed: %s", query)
         df = connector.get_pandas_df(check.check_sql, check.connection)
 
-        log.info("Check result is the following (first 10 rows): ")
-        log.info(df.head(10))
+        log.info("Check result is the following (first 10 rows): \n %s", 
+                df.head(10).to_string(index=False))
