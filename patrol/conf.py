@@ -11,6 +11,7 @@ DEFAULT_CONFIG = """\
 [core]
 patrol_home = {PATROL_HOME}
 checks_folder = {PATROL_HOME}/checks
+reports_folder = {PATROL_HOME}/reports
 log_folder = {PATROL_HOME}/logs
 executor = SequentialExecutor
 """
@@ -51,11 +52,11 @@ conf.read(PATROL_CONFIG)
 
 # Setting up logging
 
-directory = conf.get('core', 'LOG_FOLDER')
-if not os.path.exists(directory):
-    os.makedirs(directory)
+log_dir = conf.get('core', 'LOG_FOLDER')
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
 
-log_file = '{}/app_{}.log'.format(directory, strftime('%Y-%m-%d'))
+log_file = '{}/app_{}.log'.format(log_dir, strftime('%Y-%m-%d'))
 log_format =  \
     "[%(asctime)s] %(levelname)s - %(message)s  [%(name)s %(pathname)s %(lineno)d]"
 

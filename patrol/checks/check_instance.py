@@ -1,10 +1,13 @@
+import os
 import logging
+import uuid
+from time import strftime
 import textwrap
 import pandas as pd
 
 from patrol import checks
 from patrol.connectors.connector_factory import ConnectorFactory
-
+from patrol.conf import conf
 
 log = logging.getLogger(__name__)
 
@@ -15,6 +18,7 @@ class CheckInstance(object):
 
     def __init__(self, check):
         self.check = check
+        self.guid = uuid.uuid4()
 
     def run(self):
         check = self.check
@@ -35,3 +39,23 @@ class CheckInstance(object):
 
         log.info("Check result is the following (first 10 rows): \n %s", 
                 df.head(10).to_string(index=False))
+
+        # Save report to Excel file
+        report_dir = '{}/{}'.format(conf.get('core', 'REPORTS_FOLDER'), strftime('%Y-%m-%d'))
+        report_file = '/{}__{}__{}.xlsx'.format(check.check_id, strftime('%H%M%S'), self.guid)
+        report_file = report_dir + report_file
+
+        if not os.path.exists(report_dir):
+            os.makedirs(report_dir)
+        
+        log.info("Saving detailed report to Excel file: %s", report_file)
+
+        # Configure proper column width in Excel depending on actual values
+        writer = pd.ExcelWriter(report_file) 
+        df.to_excel(writer, sheet_name='Report', index=False)  # may consider na_rep='NaN'
+
+        for column in df:
+            column_length = max(df[column].astype(str).map(len).max(), len(column))
+            col_idx = df.columns.get_loc(column)
+            writer.sheets['Report'].set_column(col_idx, col_idx, column_length)
+        writer.save()

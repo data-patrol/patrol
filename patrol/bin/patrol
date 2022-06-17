@@ -47,7 +47,7 @@ def create_test_data(): #TODO
         cursor.execute("INSERT INTO orders SELECT 10010, 1, 'Service Q1', 500")
         cursor.execute("INSERT INTO orders SELECT 10011, 1, 'Service Q1', 500")
         cursor.execute("INSERT INTO orders SELECT 10012, 1, 'Service Q1', NULL")
-        cursor.execute("INSERT INTO orders SELECT 10014, 209, 'Service Q3', 800")
+        cursor.execute("INSERT INTO orders SELECT 10014, 209, 'Service Q3 - Subservice 200041.10', 800")
         cursor.execute("INSERT INTO orders SELECT 10014, 577, 'Service Q3', 800")
         cursor.execute("INSERT INTO orders SELECT 10014, 591, 'Service Q3', 800")
         cursor.execute("INSERT INTO orders SELECT 10014, 1024, 'Service Q3', 800")
