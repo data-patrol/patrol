@@ -11,6 +11,9 @@ class SqliteConnector(BaseConnector):
     def __init__(self):
         pass
 
+    def get_conn(self, conn):
+        return connect(conn.connection_string)
+    
     def get_pandas_df(self, query, conn):
         my_conn = connect(conn.connection_string)
         

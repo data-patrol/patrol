@@ -1,8 +1,12 @@
 import os
+import sys
 import logging
 import uuid
-from time import strftime
+import traceback
 import textwrap
+import hashlib
+from time import strftime
+from importlib.machinery import SourceFileLoader
 import pandas as pd
 
 from patrol import checks
@@ -32,39 +36,54 @@ class CheckInstance(object):
         # Executing check steps
         for step_id, step in check.steps.items():
             log.info("===>")
-            log.info("Running step: %s", step_id)        
+            log.info("Running step: %s [%s]", step_id, step.step_type)        
             log.info("===>")
 
             connector_name = step.connection.connector_name
             log.info("Attempting to plug in the following connector: %s", connector_name)
             connector = ConnectorFactory().get_connector(connector_name)
 
-            query = textwrap.dedent(step.query)
-            log.info("The following query will be executed: %s", query)
-            df = connector.get_pandas_df(step.query, step.connection)
+            if step.step_type == checks.StepType.QUERY: 
+                query = textwrap.dedent(step.query)
+                log.info("The following query will be executed: %s", query)
+                
+                try:
+                    df = connector.get_pandas_df(step.query, step.connection)
+                except:
+                    log.error("Failed to execute SQL step:")
+                    log.error(traceback.print_exc())
+                    return
+
+            elif step.step_type == checks.StepType.PYTHON: 
+                checks_dir = conf.get('core', 'CHECKS_FOLDER')
+                filepath = checks_dir + '/' + step.query
+
+                if not filepath.endswith(".py"):
+                    raise ValueError('Python step file extension should be .py')
+
+                try:
+                    mod_name, _ = os.path.splitext(os.path.split(filepath)[-1])
+                    path_hash = hashlib.sha1(filepath.encode('utf-8')).hexdigest()
+                    mod_name = f'user_checks_{mod_name}_{path_hash}'
+                    
+                    if mod_name in sys.modules:
+                        del sys.modules[mod_name]
+    
+                    mod = SourceFileLoader(mod_name, filepath).load_module()
+                except:
+                    log.error("Failed to load module: " + filepath)
+                    log.error(traceback.print_exc())
+                    return
+
+                try:
+                    df = mod.execute_step(connector.get_conn(step.connection))
+                except:
+                    log.error("Failed to execute Python step: %s", filepath)
+                    log.error(traceback.print_exc())
+                    return
 
             log.info("Step result is the following (first 10 rows): \n %s", 
-                    df.head(10).to_string(index=False))
-
-            # Save report to Excel file
-            # report_dir = '{}/{}'.format(conf.get('core', 'REPORTS_FOLDER'), strftime('%Y-%m-%d'))
-            # report_file = '/{}__{}__{}.xlsx'.format(check.check_id, strftime('%H%M%S'), self.guid)
-            # report_file = report_dir + report_file
-
-            # if not os.path.exists(report_dir):
-            #     os.makedirs(report_dir)
-            
-            # log.info("Saving detailed report to Excel file: %s", report_file)
-
-            # # Configure proper column width in Excel depending on actual values
-            # writer = pd.ExcelWriter(report_file) 
-            # df.to_excel(writer, sheet_name='Report', index=False)  # may consider na_rep='NaN'
-
-            # for column in df:
-            #     column_length = max(df[column].astype(str).map(len).max(), len(column))
-            #     col_idx = df.columns.get_loc(column)
-            #     writer.sheets['Report'].set_column(col_idx, col_idx, column_length)
-            # writer.save()
+            df.head(10).to_string(index=False))
 
             # Save detailed report to CSV file
             report_dir = '{}/{}'.format(conf.get('core', 'REPORTS_FOLDER'), strftime('%Y-%m-%d'))

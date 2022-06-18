@@ -10,6 +10,9 @@ class JdbcConnector(BaseConnector):
     def __init__(self):
         pass
 
+    def get_conn(self, conn):
+        pass
+    
     def get_pandas_df(self, query, conn):
         pass
         

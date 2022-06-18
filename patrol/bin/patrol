@@ -57,51 +57,59 @@ def create_test_checks(): #TODO
     conn = class_lib.Connection("MySQLiteConn1", "consumerdb.db", "Sqlite")
 
     ### sql_check_1 ###
-    sql_check_1 = checks.SqlCheck("sql_check_1")
-    step_1 = checks.CheckStep("step_1",
-                                 """
+    sql_check_1 = checks.SimpleCheck("sql_check_1")
+    step_1 = checks.SimpleCheckStep("1",
+                                checks.StepType.QUERY,
+                                """
+                                SELECT 
+                                    CASE 
+                                        WHEN row_count = 0 THEN 0
+                                        ELSE 2
+                                    END as result, 
+                                    *
+                                FROM
+                                (
                                     SELECT 
-                                        CASE 
-                                            WHEN row_count = 0 THEN 0
-                                            ELSE 2
-                                        END as result, 
-                                        *
-                                    FROM
-                                    (
-                                        SELECT 
-                                            COUNT(*) OVER () as row_count,
-                                            * 
-                                        FROM orders ord
-                                        LEFT JOIN customers cus ON ord.customer_id = cus.customer_id
-                                        WHERE cus.customer_id IS NULL
-                                    )
-                                """,
-                                conn)
+                                        COUNT(*) OVER () as row_count,
+                                        * 
+                                    FROM orders ord
+                                    LEFT JOIN customers cus ON ord.customer_id = cus.customer_id
+                                    WHERE cus.customer_id IS NULL
+                                )
+                            """,
+                            conn)
     sql_check_1.add_step(step_1)
 
     ### sql_check_2 ###
-    sql_check_2 = checks.SqlCheck("sql_check_2")
-    step_1 = checks.CheckStep("1",
-                                 """
-                                    SELECT 
-                                        CASE 
-                                            WHEN row_count = 0 THEN 0
-                                            ELSE 2
-                                        END as result, 
-                                        *
-                                    FROM
-                                    (
-                                        SELECT 
-                                            COUNT(*) OVER () as row_count,
-                                            * 
-                                        FROM orders ord
-                                        LEFT JOIN customers cus ON ord.customer_id = cus.customer_id
-                                        WHERE cus.customer_id IS NULL
-                                    )
-                                """,
+    sql_check_2 = checks.SimpleCheck("sql_check_2")
+    step_1 = checks.SimpleCheckStep("1",
+                                checks.StepType.PYTHON,
+                                "check.py",
                                 conn)
 
-    step_2 = checks.CheckStep("2",
+    step_2 = checks.SimpleCheckStep("2",
+                                checks.StepType.QUERY,
+                                """
+                                SELECT 
+                                    CASE 
+                                        WHEN row_count = 0 THEN 0
+                                        ELSE 2
+                                    END as result, 
+                                    *
+                                FROM
+                                (
+                                    SELECT 
+                                        COUNT(*) OVER () as row_count,
+                                        * 
+                                    FROM orders ord
+                                    LEFT JOIN customers cus ON ord.customer_id = cus.customer_id
+                                    WHERE cus.customer_id IS NULL
+                                )
+                            """,
+                            conn)
+
+    step_3 = checks.SimpleCheckStep("3",
+                                checks.StepType.QUERY,
                                 """
                                     SELECT 
                                         CASE 
@@ -119,8 +127,11 @@ def create_test_checks(): #TODO
                                     )
                                 """,
                                 conn)
+
+
     sql_check_2.add_step(step_1)
-    sql_check_2.add_step(step_2)
+    #sql_check_2.add_step(step_2)
+    sql_check_2.add_step(step_3)
 
     # Add checks to CheckRegistry
     # this is a temp hack, we will implement checks auto discovery and load from JSON files
@@ -129,6 +140,7 @@ def create_test_checks(): #TODO
 
 def test(args): #TODO
     print_header()
+    log.info("Started patrol master process with PID: %s", os.getpid())
     
     # Test: Create and run an on-demand job
     job = jobs.OnDemandJob()
@@ -138,6 +150,7 @@ def test(args): #TODO
 
 def run(args):
     if len(sys.argv) > 2:
+        log.info("Started patrol worker process with PID: %s", os.getpid())
         # Get check from CheckRegistry
         check = global_check_registry.checks[sys.argv[2]]
         
