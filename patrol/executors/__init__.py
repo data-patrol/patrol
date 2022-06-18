@@ -12,7 +12,7 @@ elif _EXECUTOR == 'SequentialExecutor':
     from patrol.executors.sequential_executor import SequentialExecutor
     DEFAULT_EXECUTOR = SequentialExecutor()
 else:
-    raise Exception("Executor {0} not supported.".format(_EXECUTOR))
+    raise Exception(f"Executor { _EXECUTOR } not supported.")
 
 def get_default_executor():
     return DEFAULT_EXECUTOR
