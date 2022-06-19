@@ -19,9 +19,9 @@ class ConnectorFactory:
         with open('../connectors/connectors.json') as json_file:
             data = json.load(json_file)
             for key in data:
-                for subkey in data[key]:
-                    connector_info = self.ConnectorInfo(subkey["connector.module"], subkey["connector.class"])
-                    self._connectors[key] = connector_info
+                subkey = data[key]
+                connector_info = self.ConnectorInfo(subkey["connector.module"], subkey["connector.class"])
+                self._connectors[key] = connector_info
             
     def get_connector(self, connector_name):
         connector_module = self._connectors.get(connector_name).module
