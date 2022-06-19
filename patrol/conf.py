@@ -56,7 +56,7 @@ log_dir = conf.get('core', 'LOG_FOLDER')
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 
-log_file = f'{ log_dir }/app_{ strftime('%Y-%m-%d') }.log'
+log_file = '{}/app_{}.log'.format(log_dir, strftime('%Y-%m-%d'))
 log_format =  \
     "[%(asctime)s] %(levelname)s - %(message)s  [%(name)s %(pathname)s %(lineno)d]"
 
