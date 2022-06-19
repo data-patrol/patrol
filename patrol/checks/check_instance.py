@@ -86,7 +86,7 @@ class CheckInstance(object):
             df.head(10).to_string(index=False))
 
             # Save detailed report to CSV file
-            report_dir = f'{ conf.get('core', 'REPORTS_FOLDER') }/{ strftime('%Y-%m-%d') }'
+            report_dir = '{}/{}'.format(conf.get('core', 'REPORTS_FOLDER'), strftime('%Y-%m-%d'))
             report_file = f'/{ check.check_id }__{ step.step_id }__{ strftime('%H%M%S') }__{ self.guid }.csv'
             report_file = report_dir + report_file
 
