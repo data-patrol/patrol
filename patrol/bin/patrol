@@ -17,6 +17,9 @@ from patrol import checks
 from patrol import jobs
 from patrol import executors
 from patrol import class_lib
+from patrol.settings import engine
+
+from sqlalchemy import Table, Column, Integer, String, MetaData
 
 log = logging.getLogger(__name__)
 
@@ -31,6 +34,32 @@ def print_header():
     | _|    /__/     \__\  |__|    | _| `._____|\______/  |_______|
     """
     print(HEADER)
+
+def initdb(args): #TODO
+    meta = MetaData()
+
+    dq_checks = Table(
+        'dq_checks', meta, 
+        Column('check_id', String, primary_key = True), 
+        Column('schedule_interval', String), 
+        Column('name', String), 
+        Column('description', String), 
+        Column('next_run', String), 
+    )
+    log.info('DQ_Checks table created')
+    dq_check_runs = Table(
+        'dq_check_runs', meta, 
+        Column('guid', String, primary_key = True), 
+        Column('step_id', String, primary_key = True), 
+        Column('check_id', String), 
+        Column('start_time', String), 
+        Column('end_time', String), 
+        Column('severity', Integer), 
+        Column('err_code', String), 
+        Column('err_description', String), 
+    )
+    log.info('DQ_Check_runs table created')
+    meta.create_all(engine)
 
 def create_test_data(): #TODO
     conn = sqlite3.connect("consumerdb.db")
@@ -165,7 +194,8 @@ create_test_data()    #TODO: temp
 create_test_checks()  #TODO: temp
 
 function_map = {'test' : test, 
-                'run' : run }
+                'run' : run,
+                'initdb': initdb }
 
 if len(sys.argv) > 1:
     if sys.argv[1] in function_map:

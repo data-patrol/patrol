@@ -14,6 +14,7 @@ checks_folder = {PATROL_HOME}/checks
 reports_folder = {PATROL_HOME}/reports
 log_folder = {PATROL_HOME}/logs
 executor = SequentialExecutor
+patrol_conn = sqlite:///{PATROL_HOME}/patrol.db
 """
 
 if 'PATROL_HOME' not in os.environ:
