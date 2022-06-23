@@ -83,7 +83,21 @@ def create_test_data(): #TODO
 
 def create_test_checks(): #TODO
     ## connection ###
-    conn = class_lib.Connection("MySQLiteConn1", "consumerdb.db", "Sqlite")
+    #conn = class_lib.Connection("my_conn_1", "Sqlite", "consumerdb.db")
+    
+    # Databricks sample
+    # conn = class_lib.Connection(
+    #                     'my_conn_1', 
+    #                     'Databricks',
+    #                     'NNN.azuredatabricks.net',
+    #                     '',
+    #                     '<token>',
+    #                     '{"http_path" : "sql/protocolv1/o/NNN/NNN"}')
+
+    conn = class_lib.Connection(
+                        'my_conn_1', 
+                        'Sqlite',
+                        'consumerdb.db')
 
     ### sql_check_1 ###
     sql_check_1 = checks.SimpleCheck("sql_check_1")

@@ -1,12 +1,16 @@
 class Connection:
     def __init__(
             self,
-            connection_name,
-            connection_string,
+            conn_name,
             connector_name,
-            optional_params = ""
+            conn_string,
+            login = "",
+            pwd = "",
+            other_params = ""
             ):
-        self.connection_name = connection_name
-        self.connection_string = connection_string
+        self.conn_name = conn_name
+        self.conn_string = conn_string
         self.connector_name = connector_name
-        self.optional_params = optional_params
+        self.login = login
+        self.pwd = pwd
+        self.other_params = other_params

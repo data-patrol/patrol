@@ -11,3 +11,6 @@ class BaseConnector(object):
 
     def get_pandas_df(self, query, conn):
         raise NotImplementedError("This method needs to be overridden")
+
+    def test_conn(self, conn):
+        raise NotImplementedError("This method needs to be overridden")

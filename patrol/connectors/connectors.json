@@ -4,9 +4,9 @@
             "connector.module": "patrol.connectors.sqlite_connector",
             "connector.class":"SqliteConnector"
         },
-    "Jdbc": 
+    "Databricks": 
         {
-            "connector.module": "patrol.connectors.jdbc_connector",
-            "connector.class":"JdbcConnector"
+            "connector.module": "patrol.connectors.databricks_connector",
+            "connector.class":"DatabricksConnector"
         }
 }
