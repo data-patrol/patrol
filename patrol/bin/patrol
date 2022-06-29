@@ -17,7 +17,7 @@ from patrol import checks
 from patrol import jobs
 from patrol import executors
 from patrol import class_lib
-from patrol.settings import engine
+from patrol.data_model import initdb
 
 from sqlalchemy import Table, Column, Integer, String, MetaData
 
@@ -35,31 +35,6 @@ def print_header():
     """
     print(HEADER)
 
-def initdb(args): #TODO
-    meta = MetaData()
-
-    dq_checks = Table(
-        'dq_checks', meta, 
-        Column('check_id', String, primary_key = True), 
-        Column('schedule_interval', String), 
-        Column('name', String), 
-        Column('description', String), 
-        Column('next_run', String), 
-    )
-    log.info('DQ_Checks table created')
-    dq_check_runs = Table(
-        'dq_check_runs', meta, 
-        Column('guid', String, primary_key = True), 
-        Column('step_id', String, primary_key = True), 
-        Column('check_id', String), 
-        Column('start_time', String), 
-        Column('end_time', String), 
-        Column('severity', Integer), 
-        Column('err_code', String), 
-        Column('err_description', String), 
-    )
-    log.info('DQ_Check_runs table created')
-    meta.create_all(engine)
 
 def create_test_data(): #TODO
     conn = sqlite3.connect("consumerdb.db")
@@ -94,16 +69,17 @@ def create_test_checks(): #TODO
     #                     '<token>',
     #                     '{"http_path" : "sql/protocolv1/o/NNN/NNN"}')
 
+    log.debug('==== started create_test_checks()')
     conn = class_lib.Connection(
                         'my_conn_1', 
                         'Sqlite',
                         'consumerdb.db')
 
     ### sql_check_1 ###
-    sql_check_1 = checks.SimpleCheck("sql_check_1")
-    step_1 = checks.SimpleCheckStep("1",
-                                checks.StepType.QUERY,
-                                """
+    sql_check_1 = checks.SimpleCheck(check_id='sql_check_1',name='Orders with unmatched customers')
+    step_1 = checks.SimpleCheckStep(step_id = '1',
+                                step_type = checks.StepType.QUERY,
+                                query = """
                                 SELECT 
                                     CASE 
                                         WHEN row_count = 0 THEN 0
@@ -119,22 +95,22 @@ def create_test_checks(): #TODO
                                     LEFT JOIN customers cus ON ord.customer_id = cus.customer_id
                                     WHERE cus.customer_id IS NULL
                                 )
-                            """,
-                            conn)
+                                """,
+                                connection = conn)
     sql_check_1.add_step(step_1)
 
     ### sql_check_2 ###
-    sql_check_2 = checks.SimpleCheck("sql_check_2")
-    step_1 = checks.SimpleCheckStep("1",
-                                checks.StepType.PYTHON,
-                                "check.py",
-                                conn)
+    sql_check_2 = checks.SimpleCheck(check_id='sql_check_2',name='Multistep. orders with unmatched customer')
+    step_1 = checks.SimpleCheckStep(step_id = '1',
+                                step_type = checks.StepType.PYTHON,
+                                query = "check.py",
+                                connection = conn)
 
-    step_2 = checks.SimpleCheckStep("2",
-                                checks.StepType.QUERY,
-                                """
+    step_2 = checks.SimpleCheckStep(step_id = '2',
+                                step_type = checks.StepType.QUERY,
+                                query = """
                                 SELECT 
-                                    CASE 
+                                    CASE
                                         WHEN row_count = 0 THEN 0
                                         ELSE 2
                                     END as result, 
@@ -148,17 +124,21 @@ def create_test_checks(): #TODO
                                     LEFT JOIN customers cus ON ord.customer_id = cus.customer_id
                                     WHERE cus.customer_id IS NULL
                                 )
-                            """,
-                            conn)
+                                """,
+                                connection = conn)
 
-    step_3 = checks.SimpleCheckStep("3",
-                                checks.StepType.QUERY,
-                                """
+    step_3 = checks.SimpleCheckStep(step_id = '3',
+                                step_type = checks.StepType.QUERY,
+                                query = """
                                     SELECT 
                                         CASE 
                                             WHEN row_count = 0 THEN 0
                                             ELSE 2
                                         END as result, 
+                                        CASE 
+                                            WHEN row_count = 0 THEN 0
+                                            ELSE 2
+                                        END as severity, 
                                         *
                                     FROM
                                     (
@@ -169,7 +149,7 @@ def create_test_checks(): #TODO
                                         WHERE cus.first_name IS NULL OR cus.last_name IS NULL
                                     )
                                 """,
-                                conn)
+                                connection = conn)
 
 
     sql_check_2.add_step(step_1)
@@ -184,7 +164,7 @@ def create_test_checks(): #TODO
 def test(args): #TODO
     print_header()
     log.info("Started patrol master process with PID: %s", os.getpid())
-    
+
     # Test: Create and run an on-demand job
     job = jobs.OnDemandJob()
     job.add_check_to_job(global_check_registry.checks["sql_check_1"])
@@ -202,6 +182,7 @@ def run(args):
         check_instance.run()
         log.info("Check execution completed!")
 
+initdb(None)
 
 global_check_registry = checks.CheckRegistry()  #TODO: temp
 create_test_data()    #TODO: temp

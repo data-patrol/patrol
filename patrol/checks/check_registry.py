@@ -1,8 +1,12 @@
+import logging
 import os
 import sys
 
 from patrol import checks
 from patrol.conf import conf
+from patrol.data_model import (session, DQ_Check, DQ_Check_Run)
+
+log = logging.getLogger(__name__)
 
 class CheckRegistry(object):
     """
@@ -17,6 +21,10 @@ class CheckRegistry(object):
         #TODO: This function is created for fast prototyping/tests and should be 
         # replaced with a proper implementation in future
         self.checks[check.check_id] = check
+        session.merge(DQ_Check(check))
+        log.debug(f'==================== check {check.check_id} is added')
+        
+        session.commit()
 
     def discover_checks(self):
         checks_dir = conf.get('core', 'CHECKS_FOLDER')

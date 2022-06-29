@@ -14,9 +14,11 @@ class SimpleCheckStep():
             step_id,
             step_type,
             query,
-            connection
+            connection,
+            check_id=None
             ):
         self.step_id = step_id
         self.step_type = step_type
         self.query = query
         self.connection = connection
+        self.check_id = check_id
