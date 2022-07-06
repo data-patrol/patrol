@@ -10,12 +10,14 @@ import datetime as dt
 from importlib.machinery import SourceFileLoader
 import pandas as pd
 
-from patrol import checks
+from patrol.checks import StepType
 from patrol.connectors.connector_factory import ConnectorFactory
 from patrol.conf import conf
 from patrol.data_model import (session, DQ_Check, DQ_Check_Run)
 
 log = logging.getLogger(__name__)
+
+CHECKS_DIR = conf.get('core', 'CHECKS_FOLDER')
 
 
 class Step_Exception(Exception):
@@ -41,9 +43,9 @@ class CheckInstance(object):
         log.debug(f'==================== check Instance {check.check_id} is added')
         for step in check.steps.values():
             step.guid = self.guid
-            log.debug(f'guid = {step.guid}, check_id = {step.check_id}, step_id = {step.step_id}')
+            log.debug(f'guid = {step.guid}, check_id = {step.check_id}, step_seq = {step.step_seq}')
             session.add(DQ_Check_Run(step))
-            log.debug(f'==================== step {check.check_id}.{step.step_id} is added')
+            log.debug(f'==================== step {check.check_id}.{step.step_seq} is added')
         session.commit()
 
     def run(self):
@@ -57,12 +59,12 @@ class CheckInstance(object):
         
         try:
             # Executing check steps
-            for step_id, step in check.steps.items():
+            for step_seq, step in check.steps.items():
                 log.info("===>")
-                log.info("Running step: %s [%s]", step_id, step.step_type)        
+                log.info("Running step: %s [%s]", step_seq, step.step_type)        
                 log.info("===>")
 
-                db_step = session.query(DQ_Check_Run).filter_by(guid=step.guid, step_id=step_id).first()
+                db_step = session.query(DQ_Check_Run).filter_by(guid=step.guid, step_seq=step_seq).first()
                 db_step.start_time = dt.datetime.utcnow()
                 db_step.status = 'IN PROGRESS'
 
@@ -70,7 +72,7 @@ class CheckInstance(object):
                 log.info("Attempting to plug in the following connector: %s", connector_name)
                 connector = ConnectorFactory().get_connector(connector_name)
 
-                if step.step_type == checks.StepType.QUERY: 
+                if step.step_type == StepType.QUERY.value: 
                     query = textwrap.dedent(step.query)
                     log.info("The following query will be executed: %s", query)
                     
@@ -81,9 +83,8 @@ class CheckInstance(object):
                         log.error(traceback.print_exc())
                         raise Step_Exception(message = str(e), code = Step_Exception.SQL_EXEC)
 
-                elif step.step_type == checks.StepType.PYTHON: 
-                    checks_dir = conf.get('core', 'CHECKS_FOLDER')
-                    filepath = checks_dir + '/' + step.query
+                elif step.step_type == StepType.PYTHON.value: 
+                    filepath = os.path.join( CHECKS_DIR, step.query)
 
                     if not filepath.endswith(".py"):
                         raise Step_Exception(message = 'Python step file extension should be .py', code = Step_Exception.INVALID_FILENAME)
@@ -114,7 +115,7 @@ class CheckInstance(object):
 
                 # Save detailed report to CSV file
                 report_dir = '{}/{}'.format(conf.get('core', 'REPORTS_FOLDER'), strftime('%Y-%m-%d'))
-                report_file = '/{}__{}__{}__{}.csv'.format(check.check_id, step.step_id, strftime('%H%M%S'), self.guid)
+                report_file = '/{}__{}__{}__{}.csv'.format(check.check_id, step.step_seq, strftime('%H%M%S'), self.guid)
                 report_file = report_dir + report_file
 
                 if not os.path.exists(report_dir):
@@ -134,11 +135,15 @@ class CheckInstance(object):
             db_step.err_description = ex.message
             db_step.severity = -1
             db_step.end_time = dt.datetime.utcnow()
+            log.error(f"Failed to execute step: {ex.messge}")
+            log.error(traceback.print_exc())
         except Exception as e:
             db_step.status = 'FAILED'
             db_step.err_code = 999
             db_step.err_description = str(e)
             db_step.severity = -1
             db_step.end_time = dt.datetime.utcnow()
+            log.error(f"Failed to execute step: {str(e)}")
+            log.error(traceback.print_exc())
 
         session.commit()

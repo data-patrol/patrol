@@ -59,114 +59,11 @@ def create_test_data(): #TODO
         cursor.execute("INSERT INTO orders SELECT 10014, 591, 'Service Q3', 800")
         cursor.execute("INSERT INTO orders SELECT 10014, 1024, 'Service Q3', 800")
 
-def create_test_checks(): #TODO
-    ## connection ###
-    #conn = class_lib.Connection("my_conn_1", "Sqlite", "consumerdb.db")
-    
-    # Databricks sample
-    # conn = class_lib.Connection(
-    #                     'my_conn_1', 
-    #                     'Databricks',
-    #                     'NNN.azuredatabricks.net',
-    #                     '',
-    #                     '<token>',
-    #                     '{"http_path" : "sql/protocolv1/o/NNN/NNN"}')
-
-    log.debug('==== started create_test_checks()')
-    conn = class_lib.Connection(
-                        'my_conn_1', 
-                        'Sqlite',
-                        'consumerdb.db')
-
-    ### sql_check_1 ###
-    sql_check_1 = checks.SimpleCheck(check_id='sql_check_1',name='Orders with unmatched customers')
-    step_1 = checks.SimpleCheckStep(step_id = '1',
-                                step_type = checks.StepType.QUERY,
-                                query = """
-                                SELECT 
-                                    CASE 
-                                        WHEN row_count = 0 THEN 0
-                                        ELSE 2
-                                    END as result, 
-                                    *
-                                FROM
-                                (
-                                    SELECT 
-                                        COUNT(*) OVER () as row_count,
-                                        * 
-                                    FROM orders ord
-                                    LEFT JOIN customers cus ON ord.customer_id = cus.customer_id
-                                    WHERE cus.customer_id IS NULL
-                                )
-                                """,
-                                connection = conn)
-    sql_check_1.add_step(step_1)
-
-    ### sql_check_2 ###
-    sql_check_2 = checks.SimpleCheck(check_id='sql_check_2',name='Multistep. orders with unmatched customer')
-    step_1 = checks.SimpleCheckStep(step_id = '1',
-                                step_type = checks.StepType.PYTHON,
-                                query = "check.py",
-                                connection = conn)
-
-    step_2 = checks.SimpleCheckStep(step_id = '2',
-                                step_type = checks.StepType.QUERY,
-                                query = """
-                                SELECT 
-                                    CASE
-                                        WHEN row_count = 0 THEN 0
-                                        ELSE 2
-                                    END as result, 
-                                    *
-                                FROM
-                                (
-                                    SELECT 
-                                        COUNT(*) OVER () as row_count,
-                                        * 
-                                    FROM orders ord
-                                    LEFT JOIN customers cus ON ord.customer_id = cus.customer_id
-                                    WHERE cus.customer_id IS NULL
-                                )
-                                """,
-                                connection = conn)
-
-    step_3 = checks.SimpleCheckStep(step_id = '3',
-                                step_type = checks.StepType.QUERY,
-                                query = """
-                                    SELECT 
-                                        CASE 
-                                            WHEN row_count = 0 THEN 0
-                                            ELSE 2
-                                        END as result, 
-                                        CASE 
-                                            WHEN row_count = 0 THEN 0
-                                            ELSE 2
-                                        END as severity, 
-                                        *
-                                    FROM
-                                    (
-                                        SELECT 
-                                            COUNT(*) OVER () as row_count,
-                                            * 
-                                        FROM customers cus
-                                        WHERE cus.first_name IS NULL OR cus.last_name IS NULL
-                                    )
-                                """,
-                                connection = conn)
-
-
-    sql_check_2.add_step(step_1)
-    #sql_check_2.add_step(step_2)
-    sql_check_2.add_step(step_3)
-
-    # Add checks to CheckRegistry
-    # this is a temp hack, we will implement checks auto discovery and load from JSON files
-    global_check_registry.add_check(sql_check_1)
-    global_check_registry.add_check(sql_check_2)
-
 def test(args): #TODO
     print_header()
     log.info("Started patrol master process with PID: %s", os.getpid())
+    
+    create_test_data()    #TODO: temp
 
     # Test: Create and run an on-demand job
     job = jobs.OnDemandJob()
@@ -198,8 +95,6 @@ def webserver(args):
 initdb(None)
 
 global_check_registry = checks.CheckRegistry()  #TODO: temp
-create_test_data()    #TODO: temp
-create_test_checks()  #TODO: temp
 
 function_map = {'test' : test, 
                 'run' : run,
