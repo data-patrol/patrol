@@ -19,5 +19,5 @@ def connections():
 @app.route('/rep-dq/')
 def rep_dq():
     dq_check_runs = dm.session.query(dm.DQ_Check_Run).order_by(
-            dm.DQ_Check_Run.start_time.desc())
+            dm.DQ_Check_Run.start_time.desc()).limit(500)
     return render_template('rep-dq.html', dq_check_runs=dq_check_runs)
