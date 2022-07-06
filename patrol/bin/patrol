@@ -5,10 +5,14 @@ import sys
 import logging
 import sqlite3
 import argparse
+import subprocess
+import signal
 
 # TODO: This is just a temp work-around that adds parent project directory to sys.path
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path+'/../..')
+
+from sqlalchemy import Table, Column, Integer, String, MetaData
 
 from patrol.conf import conf
 from patrol.executors import DEFAULT_EXECUTOR
@@ -19,7 +23,6 @@ from patrol import executors
 from patrol import class_lib
 from patrol.data_model import initdb
 
-from sqlalchemy import Table, Column, Integer, String, MetaData
 
 log = logging.getLogger(__name__)
 
@@ -182,6 +185,16 @@ def run(args):
         check_instance.run()
         log.info("Check execution completed!")
 
+def webserver(args):
+    gunicorn_args = [
+            "gunicorn",
+            'patrol.web.app:app',
+            #'--workers', '1',
+            '--bind', '0.0.0.0:8080',
+        ]
+
+    gunicorn_proc = subprocess.Popen(gunicorn_args, cwd="../..", close_fds=True)
+
 initdb(None)
 
 global_check_registry = checks.CheckRegistry()  #TODO: temp
@@ -190,7 +203,8 @@ create_test_checks()  #TODO: temp
 
 function_map = {'test' : test, 
                 'run' : run,
-                'initdb': initdb }
+                'initdb': initdb,
+                'webserver': webserver }
 
 if len(sys.argv) > 1:
     if sys.argv[1] in function_map:

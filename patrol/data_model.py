@@ -13,7 +13,7 @@ from patrol.conf import conf
 
 PATROL_CONN = conf.get('core', 'patrol_conn')
 
-engine = create_engine(PATROL_CONN, echo=True)
+engine = create_engine(PATROL_CONN, echo=False)
 Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 session = Session()
 
