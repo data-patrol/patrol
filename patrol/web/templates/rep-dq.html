@@ -1,6 +1,31 @@
 {%extends "master.html" %}
 {%block content%}
   
-<h4 class="card-title">Data Quality Report</h4>
+<h4 class="card-title">Data Quality Report</h4><br/>
+
+<table class="table table-sm table-borderless table-bordered table-hover">
+    <thead class="data-table-header bg-light">
+      <tr>
+        <th scope="col">GUID</th>
+        <th scope="col">Check ID</th>
+        <th scope="col">Status</th>
+        <th scope="col">Severity</th>
+        <th scope="col">Start Time</th>
+        <th scope="col">End Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in dq_check_runs %}
+      <tr class="data-table-row">
+        <td>{{ row.guid }}</th>
+        <td>{{ row.check_id }}</th>
+        <td>{{ row.status }}</td>
+        <td>{{ row.severity }}</td>
+        <td>{{ row.start_time }}</td>
+        <td>{{ row.end_time }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
   
 {% endblock %}

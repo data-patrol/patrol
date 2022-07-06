@@ -24,3 +24,11 @@ main {
 .gray-dark {
   background-color: #313035;
 }
+
+.data-table-header {
+  font-size: 11pt;
+}
+
+.data-table-row {
+  font-size: 10pt;
+}

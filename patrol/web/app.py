@@ -2,6 +2,9 @@ import logging
 
 from flask import Flask, render_template
 
+import patrol.data_model as dm
+
+
 app = Flask(__name__)
 
 @app.route("/")
@@ -15,4 +18,6 @@ def connections():
 
 @app.route('/rep-dq/')
 def rep_dq():
-    return render_template('rep-dq.html')
+    dq_check_runs = dm.session.query(dm.DQ_Check_Run).order_by(
+            dm.DQ_Check_Run.start_time.desc())
+    return render_template('rep-dq.html', dq_check_runs=dq_check_runs)

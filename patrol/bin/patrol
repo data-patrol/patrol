@@ -83,6 +83,8 @@ def run(args):
         log.info("Check execution completed!")
 
 def webserver(args):
+    #TODO: Configure Gunicorn logging
+    #TODO: Add signal handlers to stop Gunicorn after Ctrl-C and similar commands 
     gunicorn_args = [
             "gunicorn",
             'patrol.web.app:app',
