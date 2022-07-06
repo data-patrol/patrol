@@ -6,25 +6,25 @@
 <table class="table table-sm table-borderless table-bordered table-hover">
     <thead class="data-table-header bg-light">
       <tr>
-        <th scope="col">GUID</th>
         <th scope="col">Check ID</th>
         <th scope="col">Status</th>
         <th scope="col">Result</th>
         <th scope="col">Severity</th>
         <th scope="col">Start Time</th>
         <th scope="col">End Time</th>
+        <th scope="col">GUID</th>
       </tr>
     </thead>
     <tbody>
       {% for row in dq_check_runs %}
       <tr class="data-table-row">
-        <td>{{ row.guid }}-{{ row.step_seq }}</th>
         <td>{{ row.check_id }}</th>
         <td {% if row.status == 'COMPLETED' %} class="bg-success bg-opacity-25" {% endif %}>{{ row.status }}</td>
         <td {% if row.severity < 0 %} class="bg-success bg-opacity-50" {% endif %}>{{ row.severity }}</td>
         <td>{{ row.severity }}</td>
         <td>{{ row.start_time }}</td>
         <td>{{ row.end_time }}</td>
+        <td>{{ row.guid }}-{{ row.step_seq }}</th>
       </tr>
       {% endfor %}
     </tbody>
