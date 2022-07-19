@@ -29,6 +29,11 @@ main {
   font-size: 11pt;
 }
 
+.sticky-header{
+  position:sticky;
+  top: 0 ;
+}
+
 .data-table-row {
   font-size: 10pt;
 }

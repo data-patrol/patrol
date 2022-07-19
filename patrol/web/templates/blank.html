@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Patrol</title>
+    <link href="/static/css/main.css" rel="stylesheet">
+</head>
+<body>
+  <div class="vh-100 d-flex overflow-hidden">
+      <div class="d-flex flex-column flex-fill">
+        <main class="d-flex flex-column flex-fill p-3 overflow-auto">
+          <div>      
+                {% block content %}
+                {% endblock %}
+          </div>          
+        </main>
+      </div>
+  </div>
+</body>
+</html>

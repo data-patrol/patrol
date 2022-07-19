@@ -1,0 +1,70 @@
+{%extends "master.html" %}
+{%block content%}
+
+<link href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" rel="stylesheet">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>  
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/rowgroup/1.2.0/js/dataTables.rowGroup.min.js"></script>  
+  
+<h4 class="card-title">Detailed Report</h4><br/>
+
+<table id="mainTable" class="display" style="width:100%;">
+  <thead>
+      <tr>
+        <th>Check ID</th>
+        <th>Status</th>
+        <th>Result</th>
+        <th>Severity</th>
+        <th>Date</th>
+        <th>Started at</th>
+        <th>GUID</th>
+        <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      {% for row in dq_check_runs %}
+      <tr>
+        <td>{{ row.check_id }}</th>
+        <td {% if row.status == 'COMPLETED' %} class="bg-success bg-opacity-25" {% endif %}>{{ row.status }}</td>
+        <td {% if row.check_id == "sql_check_1" %} class="bg-success bg-opacity-50" {%else%} class="bg-danger bg-opacity-75" {% endif %}>
+          {% if row.check_id == "sql_check_1" %} PASSED
+          {% elif row.check_id == "sql_check_2" %} FAILED {% endif %}
+        </td>
+        <td>{{ row.severity }}</td>
+        <td>{{ row.start_time.date() }}</td>
+        <td>{{ row.start_time.strftime("%H:%M:%S.%f")[:-3] }}</td>
+        <td>{{ row.guid }}-{{ row.step_seq }}</td>
+        <td>
+          <a class="btn btn-primary btn-sm modal-details" href="{{ url_for('check_details') }}?guid={{ row.guid }}&step={{ row.step_seq }}" role="button">Details</a>        
+        </td>
+      </tr>
+      {% endfor %}
+  </tbody>
+</table>
+
+
+<!-- Modal: Check Details -->
+<div class="modal fade" id="modalCheckDetails" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content"></div>
+  </div>
+</div>
+
+  
+<script>
+  $(document).ready(function() {
+  $('#mainTable').DataTable( {
+      order: [[4, 'desc'],[5, 'desc']],
+      rowGroup: {
+          dataSrc: 4
+      }
+    } );
+  });
+
+  $('.modal-details').on('click', function(event){
+    event.preventDefault();
+    $('#modalCheckDetails').modal('show').find('.modal-content').load($(this).attr('href'));
+  });
+</script>
+
+{% endblock %}
