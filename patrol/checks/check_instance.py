@@ -111,7 +111,7 @@ class CheckInstance(object):
                         raise Step_Exception(message = str(e), code = Step_Exception.PYTHON_EXEC)
 
                 log.info("Step result is the following (first 10 rows): \n %s", 
-                df.head(10).to_string(index=False))
+                df.head(1000).to_string(index=False))
 
                 # Save detailed report to CSV file
                 report_dir = '{}/{}'.format(conf.get('core', 'REPORTS_FOLDER'), strftime('%Y-%m-%d'))
@@ -123,6 +123,7 @@ class CheckInstance(object):
                 
                 log.info("Saving detailed report to file: %s", report_file)
                 df.to_csv(report_file, sep = '\t', index=False)
+                db_step.report_file = report_file
 
                 db_step.status = 'COMPLETED'
                 db_step.err_code = 0

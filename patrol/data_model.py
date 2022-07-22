@@ -60,6 +60,7 @@ class DQ_Check_Run(Base):
         end_time = Column('end_time', DateTime)
         status = Column('status', String(16))
         severity = Column('severity', Integer)
+        report_file = Column('report_file', String(1024))
         err_code = Column('err_code', String(16))
         err_description = Column('err_description', String(1024))
 
@@ -74,5 +75,4 @@ class DQ_Check_Run(Base):
                 return f"<QD_Check_Run(check_id='{self.check_id}', step_seq='{self.step_seq}', start_time='{self.start_time}', status='{self.status}' )>"
 
 def initdb(args): #TODO
-
         Base.metadata.create_all(engine)
