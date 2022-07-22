@@ -5,7 +5,15 @@ class SimpleCheck(BaseCheck):
     """
     Implements a SQL DQ check
     """
-    def __init__(self,check_id,name,description=None,schedule_interval=None,notification=None):
+    def __init__(
+        self,
+        check_id,
+        name,
+        description=None,
+        schedule_interval=None,
+        notification=None,
+        project_name=None,
+        project_description=None):
         """
             check_id -- check identifier,
             name -- check name,
@@ -22,6 +30,8 @@ class SimpleCheck(BaseCheck):
         self.steps = {}
         super(SimpleCheck, self).__init__(check_id,name,description,schedule_interval)
         self.notification = notification
+        self.project_name = project_name
+        self.project_description = project_description
 
     def __repr__(self):
             return f"""<SimpleCheck(check_id='{self.check_id}',

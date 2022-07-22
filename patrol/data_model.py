@@ -34,6 +34,8 @@ class DQCheck(Base):
         expiry_period = Column('expiry_period', String(16))
         persist_rows = Column('persist_rows', Integer())
         recipient_list = Column('recipient_list', String(1024))
+        project_name = Column('project_name', String(256))
+        project_description = Column('project_description', String(8192))
         next_run = Column('next_run', DateTime)
 
         def __init__(self, check):
@@ -45,6 +47,8 @@ class DQCheck(Base):
                         , expiry_period = check.notification['expiry_period'] if check.notification else None
                         , persist_rows = check.notification['rows to persist'] if check.notification else None
                         , recipient_list = json.dumps(check.notification['recipient_list'] if check.notification else [])
+                        , project_name = check.project_name
+                        , project_description = check.project_description
                         )   
 
         def __repr__(self):

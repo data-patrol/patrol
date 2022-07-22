@@ -6,14 +6,14 @@ import copy
 
 from patrol import checks
 from patrol.conf import conf
-from patrol.data_model import (session, DQ_Check, DQ_Check_Run)
+from patrol.data_model import (session, DQCheck, DQCheckRun)
 from patrol.connectors.connector_factory import ConnectorFactory
 from patrol import class_lib
 
 log = logging.getLogger(__name__)
 
 CHECKS_DIR = conf.get('core', 'CHECKS_FOLDER')
-INHERITED_PARAMS = ['schedule_interval', 'expiry_period', 'rows to persist', 'recipient_list']
+INHERITED_PARAMS = ['name', 'description', 'schedule_interval', 'expiry_period', 'rows to persist', 'recipient_list']
 coonection_map = {'my_conn_1': class_lib.Connection(
                                                 'my_conn_1', 
                                                 'Sqlite',
@@ -72,7 +72,9 @@ class CheckRegistry(object):
                                                 notification = {'expiry_period': chk_params['expiry_period'],
                                                                 'rows to persist': chk_params['rows to persist'],
                                                                 'recipient_list': chk_params['recipient_list']
-                                                                }
+                                                                },
+                                                project_name=chk_params['name'],
+                                                project_description=chk_params['description']
                                                 )
                 for step in cfg_check['steps']:
                     log.info(f'step is {step["step_type"]}')
