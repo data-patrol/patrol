@@ -24,7 +24,7 @@ ID_LEN = 250
 log = logging.getLogger(__name__)
 
 
-class DQ_Check(Base):
+class DQCheck(Base):
         __tablename__ = 'dq_check'
 
         check_id = Column('check_id', String(ID_LEN), primary_key = True)
@@ -50,7 +50,7 @@ class DQ_Check(Base):
         def __repr__(self):
                 return f"<QD_Check(check_id='{self.check_id}', name='{self.name}', schedule_interval='{self.schedule_interval}' )>"
     
-class DQ_Check_Run(Base):
+class DQCheckRun(Base):
         __tablename__ = 'dq_check_run'
 
         guid = Column('guid', String(ID_LEN), primary_key = True)

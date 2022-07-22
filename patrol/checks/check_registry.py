@@ -33,7 +33,7 @@ class CheckRegistry(object):
         #TODO: This function is created for fast prototyping/tests and should be 
         # replaced with a proper implementation in future
         self.checks[check.check_id] = check
-        session.merge(DQ_Check(check))
+        session.merge(DQCheck(check))
         log.debug(f'==================== check {check.check_id} is added')
         
         session.commit()

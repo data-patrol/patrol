@@ -13,14 +13,14 @@ import pandas as pd
 from patrol.checks import StepType
 from patrol.connectors.connector_factory import ConnectorFactory
 from patrol.conf import conf
-from patrol.data_model import (session, DQ_Check, DQ_Check_Run)
+from patrol.data_model import (session, DQCheck, DQCheckRun)
 
 log = logging.getLogger(__name__)
 
 CHECKS_DIR = conf.get('core', 'CHECKS_FOLDER')
 
 
-class Step_Exception(Exception):
+class StepException(Exception):
     # Exception_codes
     INVALID_FILENAME = 10001
     SQL_EXEC = 10011
@@ -28,7 +28,7 @@ class Step_Exception(Exception):
     PYTHON_EXEC = 10031
 
     def __init__(self, message, code):
-        super(Step_Exception, self).__init__(message)
+        super(StepException, self).__init__(message)
         self.message = message
         self.code = code
 
@@ -44,7 +44,7 @@ class CheckInstance(object):
         for step in check.steps.values():
             step.guid = self.guid
             log.debug(f'guid = {step.guid}, check_id = {step.check_id}, step_seq = {step.step_seq}')
-            session.add(DQ_Check_Run(step))
+            session.add(DQCheckRun(step))
             log.debug(f'==================== step {check.check_id}.{step.step_seq} is added')
         session.commit()
 
@@ -64,7 +64,7 @@ class CheckInstance(object):
                 log.info("Running step: %s [%s]", step_seq, step.step_type)        
                 log.info("===>")
 
-                db_step = session.query(DQ_Check_Run).filter_by(guid=step.guid, step_seq=step_seq).first()
+                db_step = session.query(DQCheckRun).filter_by(guid=step.guid, step_seq=step_seq).first()
                 db_step.start_time = dt.datetime.utcnow()
                 db_step.status = 'IN PROGRESS'
 
@@ -81,13 +81,13 @@ class CheckInstance(object):
                     except Exception as e:
                         log.error("Failed to execute SQL step:")
                         log.error(traceback.print_exc())
-                        raise Step_Exception(message = str(e), code = Step_Exception.SQL_EXEC)
+                        raise StepException(message = str(e), code = StepException.SQL_EXEC)
 
                 elif step.step_type == StepType.PYTHON.value: 
                     filepath = os.path.join( CHECKS_DIR, step.query)
 
                     if not filepath.endswith(".py"):
-                        raise Step_Exception(message = 'Python step file extension should be .py', code = Step_Exception.INVALID_FILENAME)
+                        raise StepException(message = 'Python step file extension should be .py', code = StepException.INVALID_FILENAME)
 
                     try:
                         mod_name, _ = os.path.splitext(os.path.split(filepath)[-1])
@@ -101,14 +101,14 @@ class CheckInstance(object):
                     except Exception as e:
                         log.error("Failed to load module: " + filepath)
                         log.error(traceback.print_exc())
-                        raise Step_Exception(message = str(e), code = Step_Exception.PYTHON_LOAD)
+                        raise StepException(message = str(e), code = StepException.PYTHON_LOAD)
 
                     try:
                         df = mod.execute_step(connector.get_conn(step.connection))
                     except Exception as e:
                         log.error("Failed to execute Python step: %s", filepath)
                         log.error(traceback.print_exc())
-                        raise Step_Exception(message = str(e), code = Step_Exception.PYTHON_EXEC)
+                        raise StepException(message = str(e), code = StepException.PYTHON_EXEC)
 
                 log.info("Step result is the following (first 10 rows): \n %s", 
                 df.head(1000).to_string(index=False))
@@ -130,7 +130,7 @@ class CheckInstance(object):
                 db_step.err_description = ''
                 db_step.severity = int(df['severity'].loc[0]) if 'severity' in [c.lower() for c in list(df.columns)] else -10
                 db_step.end_time = dt.datetime.utcnow()
-        except Step_Exception as ex:
+        except StepException as ex:
             db_step.status = 'FAILED'
             db_step.err_code = ex.code
             db_step.err_description = ex.message
