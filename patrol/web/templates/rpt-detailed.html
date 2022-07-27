@@ -11,31 +11,37 @@
 <table id="mainTable" class="display" style="width:100%;">
   <thead>
       <tr>
+        <th>Project</th>
         <th>Check ID</th>
+        <th>Step</th>
         <th>Status</th>
         <th>Result</th>
         <th>Severity</th>
         <th>Date</th>
-        <th>Started at</th>
-        <th>GUID</th>
+        <th>Started</th>
+        <th>Finished</th>
+        <th>Schedule</th>
         <th></th>
       </tr>
   </thead>
   <tbody>
       {% for row in dq_check_runs %}
       <tr>
-        <td>{{ row.check_id }}</th>
-        <td {% if row.status == 'COMPLETED' %} class="bg-success bg-opacity-25" {% endif %}>{{ row.status }}</td>
-        <td {% if row.check_id == "sql_check_1" %} class="bg-success bg-opacity-50" {%else%} class="bg-danger bg-opacity-75" {% endif %}>
-          {% if row.check_id == "sql_check_1" %} PASSED
-          {% elif row.check_id == "sql_check_2" %} FAILED {% endif %}
+        <td>{{ row.DQCheck.project_name }}</td>
+        <td>{{ row.DQCheckRun.check_id }}</th>
+        <td>{{ row.DQCheckRun.step_seq }}</th>
+        <td {% if row.DQCheckRun.status == 'COMPLETED' %} class="bg-success bg-opacity-25" {% endif %}>{{ row.DQCheckRun.status }}</td>
+        <td {% if row.DQCheckRun.check_id == "sql_check_1" %} class="bg-success bg-opacity-50" {%else%} class="bg-danger bg-opacity-75" {% endif %}>
+          {% if row.DQCheckRun.check_id == "sql_check_1" %} PASSED
+          {% elif row.DQCheckRun.check_id == "sql_check_2" %} FAILED {% endif %}
         </td>
-        <td>{{ row.severity }}</td>
-        <td>{{ row.start_time.date() }}</td>
-        <td>{{ row.start_time.strftime("%H:%M:%S.%f")[:-3] }}</td>
-        <td>{{ row.guid }}-{{ row.step_seq }}</td>
+        <td>{{ row.DQCheckRun.severity }}</td>
+        <td>{{ row.DQCheckRun.start_time.date() }}</td>
+        <td>{{ row.DQCheckRun.start_time.strftime("%H:%M:%S.%f")[:-3] }}</td>
+        <td>{{ row.DQCheckRun.end_time.strftime("%H:%M:%S.%f")[:-3] }}</td>
+        <td>{{ row.DQCheck.schedule_interval }}</td>
         <td>
-          <a class="btn btn-primary btn-sm modal-details" href="{{ url_for('check_details') }}?guid={{ row.guid }}&step={{ row.step_seq }}" role="button">Details</a>        
+          <a class="btn btn-primary btn-sm modal-details" href="{{ url_for('check_details') }}?guid={{ row.DQCheckRun.guid }}&step={{ row.DQCheckRun.step_seq }}" role="button">Details</a>        
         </td>
       </tr>
       {% endfor %}
@@ -54,9 +60,9 @@
 <script>
   $(document).ready(function() {
   $('#mainTable').DataTable( {
-      order: [[4, 'desc'],[5, 'desc']],
+      order: [[6, 'desc'],[7, 'desc']],
       rowGroup: {
-          dataSrc: 4
+          dataSrc: 6
       }
     } );
   });

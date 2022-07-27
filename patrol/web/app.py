@@ -21,7 +21,8 @@ def connections():
 @app.route('/rpt-detailed/')
 def rpt_detailed():
     session = dm.Session()
-    dq_check_runs = session.query(dm.DQCheckRun).order_by(
+    dq_check_runs = session.query(dm.DQCheckRun, dm.DQCheck).join(dm.DQCheck, 
+        dm.DQCheckRun.check_id == dm.DQCheck.check_id).order_by(
             dm.DQCheckRun.start_time.desc()).limit(5000)
     session.close()
 
@@ -30,8 +31,9 @@ def rpt_detailed():
 @app.route('/check-details/')
 def check_details():
     guid = request.args.get('guid')
+    step = request.args.get('step')
     session = dm.Session()
-    dq_check_run = session.query(dm.DQCheckRun).filter_by(guid=guid).all()[0]
+    dq_check_run = session.query(dm.DQCheckRun).filter_by(guid=guid, step_seq=step).all()[0]
     session.close()
 
     df_report = pd.read_table(dq_check_run.report_file, delimiter='\t')

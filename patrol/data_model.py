@@ -52,7 +52,7 @@ class DQCheck(Base):
                         )   
 
         def __repr__(self):
-                return f"<QD_Check(check_id='{self.check_id}', name='{self.name}', schedule_interval='{self.schedule_interval}' )>"
+                return f"<DQ_Check(check_id='{self.check_id}', name='{self.name}', schedule_interval='{self.schedule_interval}' )>"
     
 class DQCheckRun(Base):
         __tablename__ = 'dq_check_run'
@@ -76,7 +76,7 @@ class DQCheckRun(Base):
                         , status = 'INITIAL')   
 
         def __repr__(self):
-                return f"<QD_Check_Run(check_id='{self.check_id}', step_seq='{self.step_seq}', start_time='{self.start_time}', status='{self.status}' )>"
+                return f"<DQ_Check_Run(check_id='{self.check_id}', step_seq='{self.step_seq}', start_time='{self.start_time}', status='{self.status}' )>"
 
 def initdb(args): #TODO
         Base.metadata.create_all(engine)
