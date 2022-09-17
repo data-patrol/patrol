@@ -48,33 +48,34 @@ class CheckInstance(object):
             log.debug(f'==================== step {check.check_id}.{step.step_seq} is added')
         session.commit()
 
-    def run(self):
+    def run(self, schedule_time):
         check = self.check
 
         # TODO: Just drafting the very first prototype
         # Code below needs to be rewritten
         
         log.info("===>")
-        log.info("Running check: %s", check.check_id)
+        log.info(f'Running check: {check.check_id}, schedule_time: {schedule_time}')
         
         try:
             # Executing check steps
             for step_seq, step in check.steps.items():
                 log.info("===>")
-                log.info("Running step: %s [%s]", step_seq, step.step_type)        
+                log.info(f'Running step: {step_seq} [{step.step_type}]')        
                 log.info("===>")
 
                 db_step = session.query(DQCheckRun).filter_by(guid=step.guid, step_seq=step_seq).first()
                 db_step.start_time = dt.datetime.utcnow()
                 db_step.status = 'IN PROGRESS'
+                db_step.schedule_time = dt.datetime.strptime(schedule_time,'%Y-%m-%dT%H:%M') if schedule_time else None
 
                 connector_name = step.connection.connector_name
-                log.info("Attempting to plug in the following connector: %s", connector_name)
+                log.info(f'Attempting to plug in the following connector: {connector_name}')
                 connector = ConnectorFactory().get_connector(connector_name)
 
                 if step.step_type == StepType.QUERY.value: 
                     query = textwrap.dedent(step.query)
-                    log.info("The following query will be executed: %s", query)
+                    log.info(f'The following query will be executed:\n {query}')
                     
                     try:
                         df = connector.get_pandas_df(step.query, step.connection)
@@ -110,8 +111,7 @@ class CheckInstance(object):
                         log.error(traceback.print_exc())
                         raise StepException(message = str(e), code = StepException.PYTHON_EXEC)
 
-                log.info("Step result is the following (first 10 rows): \n %s", 
-                df.head(1000).to_string(index=False))
+                log.debug(f'Step result is the following (first 10 rows): \n {df.head(10).to_string(index=False)}')
 
                 # Save detailed report to CSV file
                 report_dir = '{}/{}'.format(conf.get('core', 'REPORTS_FOLDER'), strftime('%Y-%m-%d'))
@@ -121,7 +121,7 @@ class CheckInstance(object):
                 if not os.path.exists(report_dir):
                     os.makedirs(report_dir)
                 
-                log.info("Saving detailed report to file: %s", report_file)
+                log.info(f'Saving detailed report to file: {report_file}')
                 df.to_csv(report_file, sep = '\t', index=False)
                 db_step.report_file = report_file
 

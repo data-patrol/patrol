@@ -6,7 +6,7 @@ _EXECUTOR = conf.get('core', 'EXECUTOR')
 
 if _EXECUTOR == 'ParallelExecutor':
     #TODO: Not implemented
-    #from patrol.executors.parallel_executor import ParallelExecutor  
+    from patrol.executors.parallel_executor import ParallelExecutor  
     DEFAULT_EXECUTOR = ParallelExecutor()
 elif _EXECUTOR == 'SequentialExecutor':
     from patrol.executors.sequential_executor import SequentialExecutor

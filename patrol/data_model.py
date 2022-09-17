@@ -6,9 +6,11 @@ from sqlalchemy import (
 from sqlalchemy import func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
+from sqlalchemy import (create_engine, text)
 
 from patrol.conf import conf
+from patrol import checks
+
 
 
 
@@ -24,6 +26,25 @@ ID_LEN = 250
 log = logging.getLogger(__name__)
 
 
+class ProcessLog(Base):
+        __tablename__ = 'process_log'
+
+        command = Column('command', String(32), primary_key = True)
+        args = Column('args', String(128))
+        start_time = Column('start_time', DateTime, primary_key = True)
+        stop_time = Column('stop_time', DateTime)
+
+        def __init__(self, command, args=None, start_time=None, stop_time=None):
+             Base.__init__(self
+                        , command = command
+                        , args = args
+                        , start_time = start_time
+                        , stop_time = stop_time
+                        )   
+
+        def __repr__(self):
+                return f"<ProcessLog(command='{self.command}', start_time='{self.start_time}', stop_time='{self.stop_time}' )>"
+    
 class DQCheck(Base):
         __tablename__ = 'dq_check'
 
@@ -49,6 +70,7 @@ class DQCheck(Base):
                         , recipient_list = json.dumps(check.notification['recipient_list'] if check.notification else [])
                         , project_name = check.project_name
                         , project_description = check.project_description
+                        , next_run = check.next_run
                         )   
 
         def __repr__(self):
@@ -60,6 +82,7 @@ class DQCheckRun(Base):
         guid = Column('guid', String(ID_LEN), primary_key = True)
         check_id = Column('check_id', String(ID_LEN), primary_key = True)
         step_seq = Column('step_seq', Integer, primary_key = True)
+        schedule_time = Column('schedule_time', DateTime)
         start_time = Column('start_time', DateTime)
         end_time = Column('end_time', DateTime)
         status = Column('status', String(16))
@@ -80,3 +103,23 @@ class DQCheckRun(Base):
 
 def initdb(args): #TODO
         Base.metadata.create_all(engine)
+        session.commit()
+        log.info('Database created')
+
+def getChecksToRun():
+        qry = """\
+                SELECT a.check_id, a.name, a.schedule_interval, strftime ('%Y-%m-%dT%H:%M', COALESCE(a.next_run, datetime('now'))) as next_run
+        FROM dq_check a
+        LEFT join dq_check_run b
+        ON b.check_id = a.check_id
+        AND b.schedule_time > a.next_run
+        WHERE b.check_id IS NULL
+        AND a.schedule_interval IS NOT NULL
+        AND (a.next_run IS NULL OR a.next_run < datetime('now'))
+        """
+        with engine.connect() as conn:
+                rows = conn.execute(qry)
+                # next_ = [next_run for (check_id, name, schedule_interval, next_run) in rows]
+                # print(next_[0], type(next_[0])) 
+                result = [checks.SimpleCheck(check_id=check_id, name=name, schedule_interval=schedule_interval, next_run=next_run) for (check_id, name, schedule_interval, next_run) in rows]
+        return result

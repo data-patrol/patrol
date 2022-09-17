@@ -13,7 +13,8 @@ class SimpleCheck(BaseCheck):
         schedule_interval=None,
         notification=None,
         project_name=None,
-        project_description=None):
+        project_description=None,
+        next_run=None):
         """
             check_id -- check identifier,
             name -- check name,
@@ -32,6 +33,7 @@ class SimpleCheck(BaseCheck):
         self.notification = notification
         self.project_name = project_name
         self.project_description = project_description
+        self.next_run = next_run
 
     def __repr__(self):
             return f"""<SimpleCheck(check_id='{self.check_id}',
