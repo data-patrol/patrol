@@ -71,6 +71,7 @@ def test(args): #TODO
     
     create_test_data()    #TODO: temp
 
+    global_check_registry = checks.CheckRegistry()
     # Test: Create and run an on-demand job
     job = jobs.OnDemandJob()
     job.add_check_to_job(global_check_registry.checks["sql_check_1"])
