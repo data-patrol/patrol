@@ -25,7 +25,7 @@ from patrol import jobs
 from patrol import executors
 from patrol import class_lib
 from patrol.data_model import (initdb, getChecksToRun, session, DQCheck, DQCheckRun, ProcessLog)
-
+from patrol.checks import SimpleCheck
 
 log = logging.getLogger(__name__)
 
@@ -94,7 +94,8 @@ def scheduler(args):
             while not stopped:
                 job = jobs.SchedulerJob()
                 # loop through checks to need to be run
-                for check in getChecksToRun():
+                for (check_id, name, schedule_interval, next_run) in getChecksToRun():
+                    check = SimpleCheck(check_id=check_id, name=name, schedule_interval=schedule_interval, next_run=next_run)
                     job.add_check_to_job(check)
                     next_run = croniter(check.schedule_interval, datetime.utcnow()).get_next(datetime)
                     chk = session.query(DQCheck).filter_by(check_id=check.check_id).first()

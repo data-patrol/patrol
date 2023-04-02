@@ -9,7 +9,6 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import (create_engine, text)
 
 from patrol.conf import conf
-from patrol import checks
 
 
 
@@ -108,7 +107,7 @@ def initdb(args): #TODO
 
 def getChecksToRun():
         qry = """\
-                SELECT a.check_id, a.name, a.schedule_interval, strftime ('%Y-%m-%dT%H:%M', COALESCE(a.next_run, datetime('now'))) as next_run
+        SELECT a.check_id, a.name, a.schedule_interval, strftime ('%Y-%m-%dT%H:%M', COALESCE(a.next_run, datetime('now'))) as next_run
         FROM dq_check a
         LEFT join dq_check_run b
         ON b.check_id = a.check_id
@@ -118,8 +117,5 @@ def getChecksToRun():
         AND (a.next_run IS NULL OR a.next_run < datetime('now'))
         """
         with engine.connect() as conn:
-                rows = conn.execute(qry)
-                # next_ = [next_run for (check_id, name, schedule_interval, next_run) in rows]
-                # print(next_[0], type(next_[0])) 
-                result = [checks.SimpleCheck(check_id=check_id, name=name, schedule_interval=schedule_interval, next_run=next_run) for (check_id, name, schedule_interval, next_run) in rows]
-        return result
+                rows = conn.execute(text(qry))
+        return rows
