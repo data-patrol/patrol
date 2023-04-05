@@ -36,9 +36,9 @@
           {% elif row.DQCheckRun.check_id == "sql_check_2" %} FAILED {% endif %}
         </td>
         <td>{{ row.DQCheckRun.severity }}</td>
-        <td>{{ row.DQCheckRun.start_time.date() }}</td>
-        <td>{{ row.DQCheckRun.start_time.strftime("%H:%M:%S.%f")[:-3] }}</td>
-        <td>{{ row.DQCheckRun.end_time.strftime("%H:%M:%S.%f")[:-3] }}</td>
+        <td>{{ row.DQCheckRun.start_time.date() if row.DQCheckRun.start_time is not none }}</td>
+        <td>{{ row.DQCheckRun.start_time.strftime("%H:%M:%S.%f")[:-3] if row.DQCheckRun.start_time is not none }}</td>
+        <td>{{ row.DQCheckRun.end_time.strftime("%H:%M:%S.%f")[:-3] if row.DQCheckRun.end_time is not none }}</td>
         <td>{{ row.DQCheck.schedule_interval }}</td>
         <td>
           <a class="btn btn-primary btn-sm modal-details" href="{{ url_for('check_details') }}?guid={{ row.DQCheckRun.guid }}&step={{ row.DQCheckRun.step_seq }}" role="button">Details</a>        
