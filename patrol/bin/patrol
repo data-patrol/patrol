@@ -7,6 +7,9 @@ import sqlite3
 import argparse
 import subprocess
 import signal
+from croniter import croniter
+from datetime import datetime
+import time
 
 # TODO: This is just a temp work-around that adds parent project directory to sys.path
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -21,15 +24,15 @@ from patrol import checks
 from patrol import jobs
 from patrol import executors
 from patrol import class_lib
-from patrol.data_model import initdb
-
+from patrol.data_model import (initdb, getChecksToRun, session, DQCheck, DQCheckRun, ProcessLog)
+from patrol.checks import SimpleCheck
 
 log = logging.getLogger(__name__)
 
 
 def print_header():
     HEADER = """\
-        .______      ___   .___________.______       ______    __      
+    .______      ___   .___________.______       ______    __      
     |   _  \    /   \  |           |   _  \     /  __  \  |  |     
     |  |_)  |  /  ^  \ `---|  |----|  |_)  |   |  |  |  | |  |     
     |   ___/  /  /_\  \    |  |    |      /    |  |  |  | |  |     
@@ -68,21 +71,59 @@ def test(args): #TODO
     
     create_test_data()    #TODO: temp
 
+    global_check_registry = checks.CheckRegistry()
     # Test: Create and run an on-demand job
     job = jobs.OnDemandJob()
     job.add_check_to_job(global_check_registry.checks["sql_check_1"])
     job.add_check_to_job(global_check_registry.checks["sql_check_2"])
     job.run()
 
+def scheduler(args):
+    if len(sys.argv)>2:
+        sch_start = session.query(ProcessLog).filter_by(command='scheduler',stop_time=None).first()
+        if sys.argv[2] == 'start' and sch_start != None:
+            log.error('Scheduler is started already, please stop before start again')
+        elif sys.argv[2] == 'start' and sch_start == None:
+            print_header()
+            log.info("Started patrol schedulre process with PID: %s", os.getpid())
+            session.add(ProcessLog(command=sys.argv[1],start_time=datetime.utcnow()))
+            session.commit()
+            global_check_registry = checks.CheckRegistry()
+
+            stopped = False
+            while not stopped:
+                job = jobs.SchedulerJob()
+                # loop through checks to need to be run
+                for (check_id, name, schedule_interval, next_run) in getChecksToRun():
+                    check = SimpleCheck(check_id=check_id, name=name, schedule_interval=schedule_interval, next_run=next_run)
+                    job.add_check_to_job(check)
+                    next_run = croniter(check.schedule_interval, datetime.utcnow()).get_next(datetime)
+                    chk = session.query(DQCheck).filter_by(check_id=check.check_id).first()
+                    chk.next_run = next_run
+                    log.debug(f'next_run = {next_run}, chk.next_run = {chk.next_run}.')
+                job.run()
+                stopped = (session.query(ProcessLog).filter_by(command='scheduler',stop_time=None).first() == None)
+                session.commit()
+                time.sleep(30)
+        elif sys.argv[2] == 'stop' and sch_start == None:
+            log.error('Scheduler is not started yet')
+        elif sys.argv[2] == 'stop' and sch_start != None:
+            sch_start.stop_time = datetime.utcnow()
+            session.commit()
+        else:
+            log.error(f'Scheduler does not support option {sys.argv[2]}.')
+
 def run(args):
     if len(sys.argv) > 2:
         log.info("Started patrol worker process with PID: %s", os.getpid())
+        
+        global_check_registry = checks.CheckRegistry()
         # Get check from CheckRegistry
         check = global_check_registry.checks[sys.argv[2]]
         
         # Create and run CheckInstance
         check_instance = checks.CheckInstance(check)
-        check_instance.run()
+        check_instance.run(schedule_time=(sys.argv[3] if len(sys.argv)>3 else None ))
         log.info("Check execution completed!")
 
 def webserver(args):
@@ -97,14 +138,12 @@ def webserver(args):
 
     gunicorn_proc = subprocess.Popen(gunicorn_args, cwd="../..", close_fds=True)
 
-initdb(None)
-
-global_check_registry = checks.CheckRegistry()  #TODO: temp
 
 function_map = {'test' : test, 
                 'run' : run,
                 'initdb': initdb,
-                'webserver': webserver }
+                'webserver': webserver,
+                'scheduler': scheduler }
 
 if len(sys.argv) > 1:
     if sys.argv[1] in function_map:

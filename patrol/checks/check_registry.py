@@ -32,6 +32,8 @@ class CheckRegistry(object):
     def add_check(self, check):
         #TODO: This function is created for fast prototyping/tests and should be 
         # replaced with a proper implementation in future
+        db_chk = session.query(DQCheck).filter_by(check_id=check.check_id).first()
+        check.next_run = db_chk.next_run if db_chk else None
         self.checks[check.check_id] = check
         session.merge(DQCheck(check))
         log.debug(f'==================== check {check.check_id} is added')
@@ -64,7 +66,7 @@ class CheckRegistry(object):
                 cfg_check = json.load(cfg_file)
                 self.import_params(chk_params, cfg_check, INHERITED_PARAMS)
 
-                log.info(f'check_id = {cfg_check["check_id"]}, chk_params = {chk_params}')
+                log.debug(f'check_id = {cfg_check["check_id"]}, chk_params = {chk_params}')
                 simpleCheck = checks.SimpleCheck(check_id=cfg_check['check_id'],
                                                 name=cfg_check['name'],
                                                 description=cfg_check['description'],
@@ -77,7 +79,7 @@ class CheckRegistry(object):
                                                 project_description=chk_params['description']
                                                 )
                 for step in cfg_check['steps']:
-                    log.info(f'step is {step["step_type"]}')
+                    log.debug(f'step is {step["step_type"]}')
                     simpleCheck.add_step(checks.SimpleCheckStep(step_seq = step['step_seq'],
                                                                 step_type = step['step_type'],
                                                                 query = step['query'],

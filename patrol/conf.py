@@ -13,7 +13,7 @@ patrol_home = {PATROL_HOME}
 checks_folder = {PATROL_HOME}/checks
 reports_folder = {PATROL_HOME}/reports
 log_folder = {PATROL_HOME}/logs
-executor = SequentialExecutor
+executor = ParallelExecutor
 patrol_conn = sqlite:///{PATROL_HOME}/patrol.db
 """
 
