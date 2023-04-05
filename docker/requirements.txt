@@ -1,7 +1,6 @@
 configparser
 pandas
-sqlite3
 sqlalchemy
 flask
 gunicorn
-crontiter
+croniter
