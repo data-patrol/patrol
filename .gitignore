@@ -133,3 +133,7 @@ dmypy.json
 
 # Other
 .DS_Store
+
+# JetBrains Intellij IDEA
+*.iml
+.idea

@@ -20,3 +20,26 @@ The tool will be available in form of a Docker image, so it can easily run in an
 The first release (rc1) is expected some time between June and November 2023. Stay tuned!
 
 You can reach out to us if you are interested in contribution to the project - smirnov860860@gmail.com.
+
+## Run locally
+
+### Prepare
+1. checkout git repo `https://github.com/data-patrol/patrol`, all subsequent commands assume you're in repo root
+2. install Python 3.9+ `python3 --version`
+3. install Python libraries `pip3 install -r docker/requirements.txt`
+
+### Configure
+1. Create a home directory for patrol project, like `mkdir ~/patrol`. This directory will be used as:
+   1. Home directory for SQLite DB (file `patrol.db`)
+   2. Home directory for project configuration 
+2. Set env variable `PATROL_HOME` if differ from default `~/patrol`
+3. Create configuration or copy test one `cp -r test_data/checks $PATROL_HOME`
+4. Initialize DB `patrol/bin> python3 patrol initdb`
+
+### Test
+PATROL_HOME/patrol.cfg - where to find checks
+`patrol/bin> python3 patrol test`
+
+### Usage
+Run check by id `patrol/bin> python3 patrol run {check_id}`
+will search checks according to patrol.cfg

@@ -1,0 +1,20 @@
+{
+    "check_id": "sql_check_4",
+    "name": "Orders with unmatched customers",
+    "tags": ["tag1", "tag2"],
+    "description": "Can be long text in html format describing check usecase and instructions on how to react on",
+    "steps": [
+        {
+            "step_seq": 1,
+            "step_type": "PYTHON",
+            "connection": "my_conn_1",
+            "query": "check.py"
+        },
+        {
+            "step_seq": 2,
+            "step_type": "QUERY",
+            "connection": "my_conn_1",
+            "query": "project2/check4_2.sql"
+        }
+    ]
+}

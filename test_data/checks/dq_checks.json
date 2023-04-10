@@ -1,0 +1,65 @@
+{
+    "items": [
+        {
+            "name": "Financial Department",
+            "description": "Quality checks for fin-dep",
+            "schedule_interval": "0/2 * * * *",
+            "expiry_period": "1 day",
+            "rows to persist": 10,
+            "recipient_list": [
+                {
+                    "to": "findep@gmail.com",
+                    "min_severity": 4,
+                    "max_severity": 7
+                },
+                {
+                    "to": "operational@gmail.com"
+                }
+            ],
+            "items": [
+                {
+                    "name": "Project 1",
+                    "description": "Quality checks for project 1 in fin dep",
+                    "expiry_period": "5 day",
+                    "recipient_list": [
+                        {
+                            "to": "project1@gmail.com",
+                            "min_severity": 4,
+                            "max_severity": 7
+                        }
+                    ],
+                    "items": [
+                        {
+                            "name": "Check group 1",
+                            "checks": [
+                                "project1/check1.json",
+                                "project1/check2.json"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Project 2",
+                    "description": "Quality checks for project 2 in fin dep",
+                    "expiry_period": "3 day",
+                    "recipient_list": [
+                        {
+                            "to": "project2@gmail.com",
+                            "min_severity": 4,
+                            "max_severity": 7
+                        }
+                    ],
+                    "items": [
+                        {
+                            "name": "Check group 2",
+                            "checks": [
+                                "project2/check3.json",
+                                "project2/check4.json"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
