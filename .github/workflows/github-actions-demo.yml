@@ -2,14 +2,16 @@ name: GitHub Actions Demo
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
 jobs:
-  Explore-GitHub-Actions:
-    container: python:3.11
+  build:
     runs-on: ubuntu-latest
     steps:
-      - run: cd ${{ github.workspace }}
       - name: Check out repository code
         uses: actions/checkout@v3
-      - run: python3 --version
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - run: python --version
       - run: pwd
       - run: ls
       - name: List files in the repository
