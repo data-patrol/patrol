@@ -3,12 +3,14 @@ run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
 jobs:
   Explore-GitHub-Actions:
-    container: python:3.9
+    container: python:3.11
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
       - run: python3 --version
+      - run: pwd
+      - run: ls
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
