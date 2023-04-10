@@ -1,0 +1,5 @@
+# build
+pybuilder == 0.13.9
+
+# test
+pytest ~= 7.3.0
