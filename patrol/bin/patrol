@@ -1,37 +1,28 @@
 #!/usr/bin/env python3
 
-import os 
+import os
 import sys
 import logging
 import sqlite3
-import argparse
 import subprocess
-import signal
 from croniter import croniter
 from datetime import datetime
 import time
 
 # TODO: This is just a temp work-around that adds parent project directory to sys.path
 dir_path = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(dir_path+'/../..')
-
-from sqlalchemy import Table, Column, Integer, String, MetaData
-
-from patrol.conf import conf
-from patrol.executors import DEFAULT_EXECUTOR
+sys.path.append(dir_path + '/../..')
 
 from patrol import checks
 from patrol import jobs
-from patrol import executors
-from patrol import class_lib
-from patrol.data_model import (initdb, getChecksToRun, session, DQCheck, DQCheckRun, ProcessLog)
+from patrol.data_model import (initdb, getChecksToRun, session, DQCheck, ProcessLog)
 from patrol.checks import SimpleCheck
 
 log = logging.getLogger(__name__)
 
 
 def print_header():
-    HEADER = """\
+    header = """\
     .______      ___   .___________.______       ______    __      
     |   _  \    /   \  |           |   _  \     /  __  \  |  |     
     |  |_)  |  /  ^  \ `---|  |----|  |_)  |   |  |  |  | |  |     
@@ -39,10 +30,10 @@ def print_header():
     |  |     /  _____  \   |  |    |  |\  \----|  `--'  | |  `----.
     | _|    /__/     \__\  |__|    | _| `._____|\______/  |_______|
     """
-    print(HEADER)
+    print(header)
 
 
-def create_test_data(): #TODO
+def create_test_data():  # TODO
     conn = sqlite3.connect("consumerdb.db")
 
     with conn:
@@ -52,7 +43,8 @@ def create_test_data(): #TODO
         cursor.execute("INSERT INTO customers SELECT 1, 'Jeff', 'Smith'")
         cursor.execute("INSERT INTO customers SELECT 24, 'Bill', NULL")
 
-        cursor.execute("CREATE TABLE IF NOT EXISTS orders (order_id INT, customer_id INT, order_descr TEXT, order_amt NUMERIC)")
+        cursor.execute(
+            "CREATE TABLE IF NOT EXISTS orders (order_id INT, customer_id INT, order_descr TEXT, order_amt NUMERIC)")
         cursor.execute("DELETE FROM orders")
         cursor.execute("INSERT INTO orders SELECT 10010, 1, 'Service Q1', 500")
         cursor.execute("INSERT INTO orders SELECT 10011, 1, 'Service Q1', 500")
@@ -62,14 +54,15 @@ def create_test_data(): #TODO
         cursor.execute("INSERT INTO orders SELECT 10014, 591, 'Service Q3', 800")
         cursor.execute("INSERT INTO orders SELECT 10014, 1024, 'Service Q3', 800")
 
-        for i in range(2000): 
+        for i in range(2000):
             cursor.execute("INSERT INTO orders SELECT 70" + str(i) + ", 777, 'Service Q1', NULL")
 
-def test(args): #TODO
+
+def test(args):  # TODO
     print_header()
     log.info("Started patrol master process with PID: %s", os.getpid())
-    
-    create_test_data()    #TODO: temp
+
+    create_test_data()  # TODO: temp
 
     global_check_registry = checks.CheckRegistry()
     # Test: Create and run an on-demand job
@@ -78,72 +71,76 @@ def test(args): #TODO
     job.add_check_to_job(global_check_registry.checks["sql_check_2"])
     job.run()
 
+
 def scheduler(args):
-    if len(sys.argv)>2:
-        sch_start = session.query(ProcessLog).filter_by(command='scheduler',stop_time=None).first()
-        if sys.argv[2] == 'start' and sch_start != None:
+    if len(sys.argv) > 2:
+        sch_start = session.query(ProcessLog).filter_by(command='scheduler', stop_time=None).first()
+        if sys.argv[2] == 'start' and sch_start is not None:
             log.error('Scheduler is started already, please stop before start again')
-        elif sys.argv[2] == 'start' and sch_start == None:
+        elif sys.argv[2] == 'start' and sch_start is None:
             print_header()
-            log.info("Started patrol schedulre process with PID: %s", os.getpid())
-            session.add(ProcessLog(command=sys.argv[1],start_time=datetime.utcnow()))
+            log.info("Started patrol scheduler process with PID: %s", os.getpid())
+            session.add(ProcessLog(command=sys.argv[1], start_time=datetime.utcnow()))
             session.commit()
-            global_check_registry = checks.CheckRegistry()
+            checks.CheckRegistry()
 
             stopped = False
             while not stopped:
                 job = jobs.SchedulerJob()
                 # loop through checks to need to be run
                 for (check_id, name, schedule_interval, next_run) in getChecksToRun():
-                    check = SimpleCheck(check_id=check_id, name=name, schedule_interval=schedule_interval, next_run=next_run)
+                    check = SimpleCheck(check_id=check_id, name=name, schedule_interval=schedule_interval,
+                                        next_run=next_run)
                     job.add_check_to_job(check)
                     next_run = croniter(check.schedule_interval, datetime.utcnow()).get_next(datetime)
                     chk = session.query(DQCheck).filter_by(check_id=check.check_id).first()
                     chk.next_run = next_run
                     log.debug(f'next_run = {next_run}, chk.next_run = {chk.next_run}.')
                 job.run()
-                stopped = (session.query(ProcessLog).filter_by(command='scheduler',stop_time=None).first() == None)
+                stopped = (session.query(ProcessLog).filter_by(command='scheduler', stop_time=None).first() is None)
                 session.commit()
                 time.sleep(30)
-        elif sys.argv[2] == 'stop' and sch_start == None:
+        elif sys.argv[2] == 'stop' and sch_start is None:
             log.error('Scheduler is not started yet')
-        elif sys.argv[2] == 'stop' and sch_start != None:
+        elif sys.argv[2] == 'stop' and sch_start is not None:
             sch_start.stop_time = datetime.utcnow()
             session.commit()
         else:
             log.error(f'Scheduler does not support option {sys.argv[2]}.')
 
+
 def run(args):
     if len(sys.argv) > 2:
         log.info("Started patrol worker process with PID: %s", os.getpid())
-        
+
         global_check_registry = checks.CheckRegistry()
         # Get check from CheckRegistry
         check = global_check_registry.checks[sys.argv[2]]
-        
+
         # Create and run CheckInstance
         check_instance = checks.CheckInstance(check)
-        check_instance.run(schedule_time=(sys.argv[3] if len(sys.argv)>3 else None ))
+        check_instance.run(schedule_time=(sys.argv[3] if len(sys.argv) > 3 else None))
         log.info("Check execution completed!")
 
+
 def webserver(args):
-    #TODO: Configure Gunicorn logging
-    #TODO: Add signal handlers to stop Gunicorn after Ctrl-C and similar commands 
+    # TODO: Configure Gunicorn logging
+    # TODO: Add signal handlers to stop Gunicorn after Ctrl-C and similar commands
     gunicorn_args = [
-            "gunicorn",
-            'patrol.web.app:app',
-            #'--workers', '1',
-            '--bind', '0.0.0.0:8080',
-        ]
+        "gunicorn",
+        'patrol.web.app:app',
+        # '--workers', '1',
+        '--bind', '0.0.0.0:8080',
+    ]
 
-    gunicorn_proc = subprocess.Popen(gunicorn_args, cwd="../..", close_fds=True)
+    subprocess.Popen(gunicorn_args, cwd="../..", close_fds=True)
 
 
-function_map = {'test' : test, 
-                'run' : run,
+function_map = {'test': test,
+                'run': run,
                 'initdb': initdb,
                 'webserver': webserver,
-                'scheduler': scheduler }
+                'scheduler': scheduler}
 
 if len(sys.argv) > 1:
     if sys.argv[1] in function_map:

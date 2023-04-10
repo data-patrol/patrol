@@ -1,5 +1,6 @@
 from patrol import executors
 
+
 class BaseJob(object):
     """
     Base CheckGroup class that should be inherited by all types of jobs

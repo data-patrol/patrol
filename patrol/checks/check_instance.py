@@ -8,12 +8,11 @@ import hashlib
 from time import strftime
 import datetime as dt
 from importlib.machinery import SourceFileLoader
-import pandas as pd
 
 from patrol.checks import StepType
 from patrol.connectors.connector_factory import ConnectorFactory
 from patrol.conf import conf
-from patrol.data_model import (session, DQCheck, DQCheckRun)
+from patrol.data_model import (session, DQCheckRun)
 
 log = logging.getLogger(__name__)
 
@@ -31,6 +30,7 @@ class StepException(Exception):
         super(StepException, self).__init__(message)
         self.message = message
         self.code = code
+
 
 class CheckInstance(object):
     """
@@ -53,63 +53,64 @@ class CheckInstance(object):
 
         # TODO: Just drafting the very first prototype
         # Code below needs to be rewritten
-        
+
         log.info("===>")
         log.info(f'Running check: {check.check_id}, schedule_time: {schedule_time}')
-        
+
         try:
             # Executing check steps
             for step_seq, step in check.steps.items():
                 log.info("===>")
-                log.info(f'Running step: {step_seq} [{step.step_type}]')        
+                log.info(f'Running step: {step_seq} [{step.step_type}]')
                 log.info("===>")
 
                 db_step = session.query(DQCheckRun).filter_by(guid=step.guid, step_seq=step_seq).first()
                 db_step.start_time = dt.datetime.utcnow()
                 db_step.status = 'IN PROGRESS'
-                db_step.schedule_time = dt.datetime.strptime(schedule_time,'%Y-%m-%dT%H:%M') if schedule_time else None
+                db_step.schedule_time = dt.datetime.strptime(schedule_time, '%Y-%m-%dT%H:%M') if schedule_time else None
 
                 connector_name = step.connection.connector_name
                 log.info(f'Attempting to plug in the following connector: {connector_name}')
                 connector = ConnectorFactory().get_connector(connector_name)
 
-                if step.step_type == StepType.QUERY.value: 
+                if step.step_type == StepType.QUERY.value:
                     query = textwrap.dedent(step.query)
                     log.info(f'The following query will be executed:\n {query}')
-                    
+
                     try:
                         df = connector.get_pandas_df(step.query, step.connection)
                     except Exception as e:
                         log.error("Failed to execute SQL step:")
                         log.error(traceback.print_exc())
-                        raise StepException(message = str(e), code = StepException.SQL_EXEC)
+                        raise StepException(message=str(e), code=StepException.SQL_EXEC)
 
-                elif step.step_type == StepType.PYTHON.value: 
-                    filepath = os.path.join( CHECKS_DIR, step.query)
+                elif step.step_type == StepType.PYTHON.value:
+                    filepath = os.path.join(CHECKS_DIR, step.query)
 
                     if not filepath.endswith(".py"):
-                        raise StepException(message = 'Python step file extension should be .py', code = StepException.INVALID_FILENAME)
+                        raise StepException(message='Python step file extension should be .py',
+                                            code=StepException.INVALID_FILENAME)
 
                     try:
                         mod_name, _ = os.path.splitext(os.path.split(filepath)[-1])
                         path_hash = hashlib.sha1(filepath.encode('utf-8')).hexdigest()
                         mod_name = f'user_checks_{mod_name}_{path_hash}'
-                        
+
                         if mod_name in sys.modules:
                             del sys.modules[mod_name]
-        
+
                         mod = SourceFileLoader(mod_name, filepath).load_module()
                     except Exception as e:
                         log.error("Failed to load module: " + filepath)
                         log.error(traceback.print_exc())
-                        raise StepException(message = str(e), code = StepException.PYTHON_LOAD)
+                        raise StepException(message=str(e), code=StepException.PYTHON_LOAD)
 
                     try:
                         df = mod.execute_step(connector.get_conn(step.connection))
                     except Exception as e:
                         log.error("Failed to execute Python step: %s", filepath)
                         log.error(traceback.print_exc())
-                        raise StepException(message = str(e), code = StepException.PYTHON_EXEC)
+                        raise StepException(message=str(e), code=StepException.PYTHON_EXEC)
 
                 log.debug(f'Step result is the following (first 10 rows): \n {df.head(10).to_string(index=False)}')
 
@@ -120,15 +121,16 @@ class CheckInstance(object):
 
                 if not os.path.exists(report_dir):
                     os.makedirs(report_dir)
-                
+
                 log.info(f'Saving detailed report to file: {report_file}')
-                df.to_csv(report_file, sep = '\t', index=False)
+                df.to_csv(report_file, sep='\t', index=False)
                 db_step.report_file = report_file
 
                 db_step.status = 'COMPLETED'
                 db_step.err_code = 0
                 db_step.err_description = ''
-                db_step.severity = int(df['severity'].loc[0]) if 'severity' in [c.lower() for c in list(df.columns)] else -10
+                db_step.severity = int(df['severity'].loc[0]) if 'severity' in [c.lower() for c in
+                                                                                list(df.columns)] else -10
                 db_step.end_time = dt.datetime.utcnow()
         except StepException as ex:
             db_step.status = 'FAILED'
@@ -136,7 +138,7 @@ class CheckInstance(object):
             db_step.err_description = ex.message
             db_step.severity = -1
             db_step.end_time = dt.datetime.utcnow()
-            log.error(f"Failed to execute step: {ex.messge}")
+            log.error(f"Failed to execute step: {ex.message}")
             log.error(traceback.print_exc())
         except Exception as e:
             db_step.status = 'FAILED'
