@@ -26,7 +26,7 @@ You can reach out to us if you are interested in contribution to the project - s
 ### Prepare
 1. checkout git repo `https://github.com/data-patrol/patrol`, all subsequent commands assume you're in repo root
 2. install Python 3.9+ `python3 --version`
-3. install Python libraries `pip3 install -r docker/requirements.txt`
+3. install Python libraries `pip3 install -r requirements.txt`
 
 ### Configure
 1. Create a home directory for patrol project, like `mkdir ~/patrol`. This directory will be used as:
