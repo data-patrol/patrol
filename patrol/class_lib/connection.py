@@ -4,10 +4,10 @@ class Connection:
             conn_name,
             connector_name,
             conn_string,
-            login = "",
-            pwd = "",
-            other_params = ""
-            ):
+            login="",
+            pwd="",
+            other_params=""
+    ):
         self.conn_name = conn_name
         self.conn_string = conn_string
         self.connector_name = connector_name

@@ -27,7 +27,7 @@ try:
 except OSError as ex:
     if ex.errno == errno.EEXIST and os.path.isdir(PATROL_HOME):
         pass
-    else: 
+    else:
         raise
 
 if 'PATROL_CONFIG' not in os.environ:
@@ -42,14 +42,13 @@ if not os.path.isfile(PATROL_CONFIG):
     it is missing. The right way to change your configuration is to alter your
     configuration file, not this code.
     '''
-    logging.info("Createing new config file in: " + PATROL_CONFIG)
+    logging.info("Creating new config file in: " + PATROL_CONFIG)
     f = open(PATROL_CONFIG, 'w')
     f.write(DEFAULT_CONFIG.format(**locals()))
     f.close()
 
 logging.info("Reading the config from " + PATROL_CONFIG)
 conf.read(PATROL_CONFIG)
-
 
 # Setting up logging
 
@@ -58,7 +57,7 @@ if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 
 log_file = '{}/app_{}.log'.format(log_dir, strftime('%Y-%m-%d'))
-log_format =  \
+log_format = \
     "[%(asctime)s] %(levelname)s - %(message)s  [%(name)s %(pathname)s %(lineno)d]"
 
 logging.basicConfig(
@@ -74,15 +73,17 @@ console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
 logging.info("Logging into: " + log_file)
 
-#Creating a handler for unhandled exceptions
+
+# Creating a handler for unhandled exceptions
 def handle_unhandled_exception(exc_type, exc_value, exc_traceback):
     if issubclass(exc_type, KeyboardInterrupt):
         # Will call default excepthook
         sys.__excepthook__(exc_type, exc_value, exc_traceback)
         return
 
-    #Create a critical level log message with info from the except hook.
+    # Create a critical level log message with info from the except hook.
     logging.critical("Unhandled exception: ", exc_info=(exc_type, exc_value, exc_traceback))
+
 
 # Assign the excepthook to the handler
 sys.excepthook = handle_unhandled_exception

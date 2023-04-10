@@ -1,9 +1,8 @@
 import logging
 import subprocess
 
-from patrol.checks.check_types.base_check import BaseCheck
-
 log = logging.getLogger(__name__)
+
 
 class BaseExecutor(object):
     """
@@ -25,5 +24,3 @@ class BaseExecutor(object):
 
     def execute_sync(self):
         raise NotImplementedError("This method needs to be overridden")
-
-        
