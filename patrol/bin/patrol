@@ -3,7 +3,6 @@
 import os
 import sys
 import logging
-import sqlite3
 import subprocess
 from croniter import croniter
 from datetime import datetime
@@ -31,45 +30,6 @@ def print_header():
     | _|    /__/     \__\  |__|    | _| `._____|\______/  |_______|
     """
     print(header)
-
-
-def create_test_data():  # TODO
-    conn = sqlite3.connect("consumerdb.db")
-
-    with conn:
-        cursor = conn.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS customers (customer_id INT, first_name TEXT, last_name TEXT)")
-        cursor.execute("DELETE FROM customers")
-        cursor.execute("INSERT INTO customers SELECT 1, 'Jeff', 'Smith'")
-        cursor.execute("INSERT INTO customers SELECT 24, 'Bill', NULL")
-
-        cursor.execute(
-            "CREATE TABLE IF NOT EXISTS orders (order_id INT, customer_id INT, order_descr TEXT, order_amt NUMERIC)")
-        cursor.execute("DELETE FROM orders")
-        cursor.execute("INSERT INTO orders SELECT 10010, 1, 'Service Q1', 500")
-        cursor.execute("INSERT INTO orders SELECT 10011, 1, 'Service Q1', 500")
-        cursor.execute("INSERT INTO orders SELECT 10012, 1, 'Service Q1', NULL")
-        cursor.execute("INSERT INTO orders SELECT 10014, 209, 'Service Q3', 800")
-        cursor.execute("INSERT INTO orders SELECT 10014, 577, 'Service Q3', 800")
-        cursor.execute("INSERT INTO orders SELECT 10014, 591, 'Service Q3', 800")
-        cursor.execute("INSERT INTO orders SELECT 10014, 1024, 'Service Q3', 800")
-
-        for i in range(2000):
-            cursor.execute("INSERT INTO orders SELECT 70" + str(i) + ", 777, 'Service Q1', NULL")
-
-
-def test(args):  # TODO
-    print_header()
-    log.info("Started patrol master process with PID: %s", os.getpid())
-
-    create_test_data()  # TODO: temp
-
-    global_check_registry = checks.CheckRegistry()
-    # Test: Create and run an on-demand job
-    job = jobs.OnDemandJob()
-    job.add_check_to_job(global_check_registry.checks["sql_check_1"])
-    job.add_check_to_job(global_check_registry.checks["sql_check_2"])
-    job.run()
 
 
 def scheduler(args):
@@ -136,8 +96,7 @@ def webserver(args):
     subprocess.Popen(gunicorn_args, cwd="../..", close_fds=True)
 
 
-function_map = {'test': test,
-                'run': run,
+function_map = {'run': run,
                 'initdb': initdb,
                 'webserver': webserver,
                 'scheduler': scheduler}
