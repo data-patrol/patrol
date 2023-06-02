@@ -98,7 +98,7 @@ class DQCheckRun(Base):
         return f"<DQ_Check_Run(check_id='{self.check_id}', step_seq='{self.step_seq}', start_time='{self.start_time}', status='{self.status}' )>"
 
 
-def initdb():  # TODO
+def initdb(args):  # TODO
     Base.metadata.create_all(engine)
     session.commit()
     log.info('Database created')
@@ -106,14 +106,14 @@ def initdb():  # TODO
 
 def getChecksToRun():
     qry = """\
-        SELECT a.check_id, a.name, a.schedule_interval, strftime ('%Y-%m-%dT%H:%M', COALESCE(a.next_run, datetime('now'))) as next_run
+        SELECT a.check_id, a.name, a.schedule_interval, TO_CHAR(COALESCE(a.next_run, NOW()), 'YYYY-MM-DD"T"HH24:MI') as next_run
         FROM dq_check a
         LEFT join dq_check_run b
         ON b.check_id = a.check_id
         AND b.schedule_time > a.next_run
         WHERE b.check_id IS NULL
         AND a.schedule_interval IS NOT NULL
-        AND (a.next_run IS NULL OR a.next_run < datetime('now'))
+        AND (a.next_run IS NULL OR a.next_run < NOW())
         """
     with engine.connect() as conn:
         rows = conn.execute(text(qry))

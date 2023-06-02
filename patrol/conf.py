@@ -14,7 +14,7 @@ checks_folder = {PATROL_HOME}/checks
 reports_folder = {PATROL_HOME}/reports
 log_folder = {PATROL_HOME}/logs
 executor = ParallelExecutor
-patrol_conn = sqlite:///{PATROL_HOME}/patrol.db
+patrol_conn = postgresql://patuser:Amego475@ptdb:5432/patroldb
 """
 
 if 'PATROL_HOME' not in os.environ:

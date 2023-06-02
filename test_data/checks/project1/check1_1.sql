@@ -12,4 +12,4 @@ FROM
     FROM orders ord
     LEFT JOIN customers cus ON ord.customer_id = cus.customer_id
     WHERE cus.customer_id IS NULL
-)
+) t

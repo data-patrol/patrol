@@ -4,3 +4,4 @@ sqlalchemy
 flask
 gunicorn
 croniter
+psycopg2-binary

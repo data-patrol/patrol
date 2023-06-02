@@ -1,7 +1,7 @@
 import os
 import sys
 import logging
-import sqlite3
+import psycopg2
 
 # TODO: This is just a temp work-around that adds parent project directory to sys.path
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -9,15 +9,44 @@ sys.path.append(dir_path + '/../..')
 
 from patrol import checks
 from patrol import jobs
+from patrol.conf import conf
 
 log = logging.getLogger(__name__)
 
+PATROL_CONN = conf.get('core', 'patrol_conn')
+PATROL_DB_NAME = 'patroldb'
+TEST_DB_NAME = 'consumerdb'
 
-def create_test_data():  # TODO
-    conn = sqlite3.connect("consumerdb.db")
 
-    with conn:
+def create_test_db():
+    try:
+        conn = psycopg2.connect(PATROL_CONN)
+        conn.autocommit = True
         cursor = conn.cursor()
+
+        # Create the new database if it doesn't exist
+        cursor.execute(f"SELECT 1 FROM pg_catalog.pg_database WHERE datname = '{TEST_DB_NAME}'")
+        database_exists = cursor.fetchone()
+        if not database_exists:
+            cursor.execute(f"CREATE DATABASE {TEST_DB_NAME}")
+            print(f"Database '{TEST_DB_NAME}' created successfully")
+        else:
+            print(f"Database '{TEST_DB_NAME}' already exists")
+
+        cursor.close()
+        conn.close()
+
+    except psycopg2.Error as e:
+        print("Error connecting to PostgreSQL:", e)
+
+
+def create_test_data():
+    try:
+        conn = psycopg2.connect(PATROL_CONN.replace(PATROL_DB_NAME, TEST_DB_NAME))        
+        conn.autocommit = True
+        cursor = conn.cursor()
+
+        # Insert data into the table
         cursor.execute("CREATE TABLE IF NOT EXISTS customers (customer_id INT, first_name TEXT, last_name TEXT)")
         cursor.execute("DELETE FROM customers")
         cursor.execute("INSERT INTO customers SELECT 1, 'Jeff', 'Smith'")
@@ -37,14 +66,22 @@ def create_test_data():  # TODO
         for i in range(2000):
             cursor.execute("INSERT INTO orders SELECT 70" + str(i) + ", 777, 'Service Q1', NULL")
 
+        print("Data inserted successfully")
+
+        cursor.close()
+        conn.close()
+
+    except psycopg2.Error as e:
+        print("Error connecting to PostgreSQL:", e)
+    
 
 def test(args):  # TODO
-    log.info("Started patrol master process with PID: %s", os.getpid())
-
-    create_test_data()  # TODO: temp
+    create_test_db()
+    create_test_data()
 
     global_check_registry = checks.CheckRegistry()
-    # Test: Create and run an on-demand job
+    
+    # Create and run an on-demand job
     job = jobs.OnDemandJob()
     job.add_check_to_job(global_check_registry.checks["sql_check_1"])
     job.add_check_to_job(global_check_registry.checks["sql_check_2"])
@@ -57,6 +94,4 @@ if len(sys.argv) > 1:
     if sys.argv[1] in function_map:
         func = function_map[sys.argv[1]]
         func(sys.argv)
-
-
 

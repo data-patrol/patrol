@@ -119,8 +119,11 @@ class CheckInstance(object):
                 report_file = '/{}__{}__{}__{}.csv'.format(check.check_id, step.step_seq, strftime('%H%M%S'), self.guid)
                 report_file = report_dir + report_file
 
-                if not os.path.exists(report_dir):
-                    os.makedirs(report_dir)
+                try:
+                    if not os.path.exists(report_dir):
+                        os.makedirs(report_dir)
+                except Exception as e:
+                    log.debug(f'An error occurred when tried to create a directory: {str(e)}')
 
                 log.info(f'Saving detailed report to file: {report_file}')
                 df.to_csv(report_file, sep='\t', index=False)

@@ -6,15 +6,9 @@
     "steps": [
         {
             "step_seq": 1,
-            "step_type": "PYTHON",
-            "connection": "my_conn_1",
-            "query": "check.py"
-        },
-        {
-            "step_seq": 2,
             "step_type": "QUERY",
             "connection": "my_conn_1",
-            "query": "project2/check4_2.sql"
+            "query": "project2/check4_1.sql"
         }
     ]
 }

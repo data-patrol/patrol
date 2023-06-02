@@ -2,43 +2,35 @@
 
 Hello and welcome!
 
-We are a small team of data enthusiasts building a lightweight data quality tool. The general idea is that it will help to execute data quality checks across multiple data sources and help to monitor and manage data quality. With the right use, we think it can bring data quality to the next level!
+We are a small team of data enthusiasts building a lightweight data quality tool. The idea is that it will help to execute data quality checks across multiple data sources and help to proactively monitor and manage data quality. 
 
-The tool will come with a simple web UI and will initially support the following data sources:
+The tool will come with a simple web UI and will eventually support the following data sources:
 
-- Redshift
-- Snowflake
+- PostgreSQL
 - SQL Server
 - Oracle 
 - MySQL / MariaDB
-- PostgreSQL
+- Redshift
+- Snowflake
 - Databricks
 - Presto/Trino
 
 The tool will be available in form of a Docker image, so it can easily run in any cloud and on-prem.
-
-The first release (rc1) is expected some time between June and November 2023. Stay tuned!
-
 You can reach out to us if you are interested in contribution to the project - smirnov860860@gmail.com.
 
-## Run locally
+## Run using Docker
 
 ### Prepare
-1. checkout git repo `https://github.com/data-patrol/patrol`, all subsequent commands assume you're in repo root
-2. install Python 3.9+ `python3 --version`
-3. install Python libraries `pip3 install -r docker/requirements.txt`
+1. Install Docker
+2. Checkout git repo `https://github.com/data-patrol/patrol`, all subsequent commands assume you're in repo root
 
 ### Configure
-1. Create a home directory for patrol project, like `mkdir ~/patrol`. This directory will be used as:
-   1. Home directory for SQLite DB (file `patrol.db`)
-   2. Home directory for project configuration 
-2. Set env variable `PATROL_HOME` if differ from default `~/patrol`
-3. Create configuration or copy test one `cp -r test_data/checks $PATROL_HOME`
-4. Initialize DB `patrol/bin> python3 patrol initdb`
+Run the following command from the repo root directory "docker-compose up -d"
 
 ### Test
-PATROL_HOME/patrol.cfg - where to find checks
-`patrol/bin> python3 patrol test`
+Using Docker CLI (or Docker Desktop) connect to pt_ptapp_1 container and run the following commands:
+cd /app/patrol/bin
+python test test
 
 ### Usage
 Run check by id `patrol/bin> python3 patrol run {check_id}`

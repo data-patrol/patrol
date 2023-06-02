@@ -1,4 +1,8 @@
 {
+    "SqlAlchemy": {
+        "connector.module": "patrol.connectors.sqlalchemy_connector",
+        "connector.class": "SqlAlchemyConnector"
+    },
     "Sqlite": {
         "connector.module": "patrol.connectors.sqlite_connector",
         "connector.class": "SqliteConnector"

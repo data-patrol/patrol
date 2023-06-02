@@ -12,7 +12,8 @@ log = logging.getLogger(__name__)
 
 CHECKS_DIR = conf.get('core', 'CHECKS_FOLDER')
 INHERITED_PARAMS = ['name', 'description', 'schedule_interval', 'expiry_period', 'rows to persist', 'recipient_list']
-connection_map = {'my_conn_1': class_lib.Connection('my_conn_1', 'Sqlite', 'consumerdb.db')}
+connection_map = {'my_conn_1': class_lib.Connection('my_conn_1', 'SqlAlchemy', 'postgresql://patuser:Amego475@ptdb:5432/consumerdb')} #TODO: Fix this
+#connection_map = {'my_conn_1': class_lib.Connection('my_conn_1', 'Sqlite', 'consumerdb.db')} 
 
 
 class CheckRegistry(object):

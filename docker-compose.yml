@@ -1,0 +1,21 @@
+services:
+  ptdb:
+    image: 'postgres:15.2'
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: patuser
+      POSTGRES_PASSWORD: Amego475
+      POSTGRES_DB: patroldb
+    networks:
+      - patrol-network
+  ptapp:
+    restart: always
+    build: .
+    depends_on:
+      - ptdb
+    networks:
+      - patrol-network
+
+networks:
+  patrol-network:
