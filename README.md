@@ -24,7 +24,7 @@ You can reach out to us if you are interested in contribution to the project - s
 1. Install Docker
 2. Checkout git repo `https://github.com/data-patrol/patrol`, all subsequent commands assume you're in repo root
 
-### Configure
+### Run
 Run the following command from the repo root directory "docker-compose up -d"
 
 ### Test
