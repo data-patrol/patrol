@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application's code to the working directory
 COPY ./patrol /app/patrol
-COPY ./test_data /root/patrol
+COPY ./examples /root/patrol
 
 WORKDIR /app/patrol/bin
 
