@@ -26,12 +26,12 @@ You can reach out to us if you are interested in contribution to the project - s
 2. Checkout git repo `https://github.com/data-patrol/patrol`, all subsequent commands assume you're in repo root
 
 ### Run
-Run the following command from the repo root directory "docker-compose up -d"
+Run the following command from the repo root directory `docker-compose up -d`
 
 ### Test
-Using Docker CLI (or Docker Desktop) connect to pt_ptapp_1 container and run the following commands:
-cd /app/patrol/bin
-python test test
+Using Docker CLI (or Docker Desktop) connect to pt_ptapp_1 container and run the following commands: <br>
+`cd /app/patrol/bin` <br>
+`python test test`
 
 ### Usage
 Run check by id `patrol/bin> python3 patrol run {check_id}`
