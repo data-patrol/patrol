@@ -61,7 +61,7 @@ class DQCheck(Base):
                       , name=check.name
                       , description=check.description
                       , expiry_period=check.notification['expiry_period'] if check.notification else None
-                      , persist_rows=check.notification['rows to persist'] if check.notification else None
+                      , persist_rows=check.notification['rows_to_persist'] if check.notification else None
                       , recipient_list=json.dumps(check.notification['recipient_list'] if check.notification else [])
                       , project_name=check.project_name
                       , project_description=check.project_description

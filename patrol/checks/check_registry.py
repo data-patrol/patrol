@@ -11,7 +11,7 @@ from patrol import class_lib
 log = logging.getLogger(__name__)
 
 CHECKS_DIR = conf.get('core', 'CHECKS_FOLDER')
-INHERITED_PARAMS = ['name', 'description', 'schedule_interval', 'expiry_period', 'rows to persist', 'recipient_list']
+INHERITED_PARAMS = ['name', 'description', 'schedule_interval', 'expiry_period', 'rows_to_persist', 'recipient_list']
 connection_map = {'my_conn_1': class_lib.Connection('my_conn_1', 'SqlAlchemy', 'postgresql://patuser:Amego475@ptdb:5432/consumerdb')} #TODO: Fix this
 #connection_map = {'my_conn_1': class_lib.Connection('my_conn_1', 'Sqlite', 'consumerdb.db')} 
 
@@ -68,7 +68,7 @@ class CheckRegistry(object):
                                                  description=cfg_check['description'],
                                                  schedule_interval=chk_params['schedule_interval'],
                                                  notification={'expiry_period': chk_params['expiry_period'],
-                                                               'rows to persist': chk_params['rows to persist'],
+                                                               'rows_to_persist': chk_params['rows_to_persist'],
                                                                'recipient_list': chk_params['recipient_list']
                                                                },
                                                  project_name=chk_params['name'],

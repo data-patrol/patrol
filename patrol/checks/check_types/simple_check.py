@@ -23,7 +23,7 @@ class SimpleCheck(BaseCheck):
             schedule_interval -- cron expression specify recurrent runs,
             notification -- dictionary with keys:
                 expiry_period - in format [digit] [unit measure], e.g. 2 day, 5 hour, etc.
-                rows to persist - number of rows of output used to send in notification
+                rows_to_persist - number of rows of output used to send in notification
                 recipient_list - list of dictionaries with keys:
                     to - coma separated list of emails
                     min_severity - specifies severity range for which recipient is used 

@@ -5,7 +5,7 @@
             "description": "Quality checks for fin-dep",
             "schedule_interval": "0/2 * * * *",
             "expiry_period": "1 day",
-            "rows to persist": 10,
+            "rows_to_persist": 10,
             "recipient_list": [
                 {
                     "to": "findep@gmail.com",
