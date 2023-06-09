@@ -14,3 +14,4 @@ class Connection:
         self.login = login
         self.pwd = pwd
         self.other_params = other_params
+
