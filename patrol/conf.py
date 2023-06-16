@@ -11,6 +11,7 @@ DEFAULT_CONFIG = """\
 [core]
 patrol_home = {PATROL_HOME}
 checks_folder = {PATROL_HOME}/checks
+connections_folder = {PATROL_HOME}/connections
 reports_folder = {PATROL_HOME}/reports
 log_folder = {PATROL_HOME}/logs
 executor = ParallelExecutor

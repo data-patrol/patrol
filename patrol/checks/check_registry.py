@@ -11,9 +11,10 @@ from patrol import class_lib
 log = logging.getLogger(__name__)
 
 CHECKS_DIR = conf.get('core', 'CHECKS_FOLDER')
+CONNECTIONS_DIR = conf.get('core', 'CONNECTIONS_FOLDER')
 INHERITED_PARAMS = ['name', 'description', 'schedule_interval', 'expiry_period', 'rows_to_persist', 'recipient_list']
-connection_map = {'my_conn_1': class_lib.Connection('my_conn_1', 'SqlAlchemy', 'postgresql://patuser:Amego475@ptdb:5432/consumerdb')} #TODO: Fix this
-#connection_map = {'my_conn_1': class_lib.Connection('my_conn_1', 'Sqlite', 'consumerdb.db')} 
+# connection_map = {'my_conn_1': class_lib.Connection('my_conn_1', 'SqlAlchemy', 'postgresql://patuser:Amego475@ptdb:5432/consumerdb')} #TODO: Fix this
+# connection_map = {'my_conn_1': class_lib.Connection('my_conn_1', 'Sqlite', 'consumerdb.db')} 
 
 
 class CheckRegistry(object):
@@ -88,6 +89,24 @@ class CheckRegistry(object):
             for item in tree['items']:
                 self.get_checks(item, params, arr)
         return arr
+
+    @property
+    def get_connection_map(self):
+        return self.connection_map or self.get_connection_map_from_json()
+
+    def get_connection_map_from_json(self):
+        with open(os.path.join(CONNECTIONS_DIR, 'connections.json')) as f:
+            map = json.load(f)
+            conn_map={}
+            for conn in map:
+                conn_map[conn] = class_lib.Connection(conn_name=map[conn]['conn_name'],
+                                                    connector_name=map[conn]['connector_name'],
+                                                    conn_string=map[conn]['conn_string'],
+                                                    login=map[conn]['login'],
+                                                    pwd=map[conn]['pwd'],
+                                                    other_params=map[conn]['other_params'])
+
+        return conn_map
 
     def discover_checks(self):
         log.debug('++++++++++++++++ discover_checks started')
