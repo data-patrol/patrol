@@ -1,0 +1,7 @@
+{
+    "my_conn_1": {
+        "conn_name": "my_conn_1",
+        "connector_name": "SqlAlchemy",
+        "conn_string": "postgresql://patuser:Amego475@ptdb:5432/consumerdb"
+    }
+}
