@@ -7,6 +7,7 @@ import pandas as pd
 import patrol.data_model as dm
 from api.dq_checks import dq_endpoints_bp
 from api.dq_check_run import dq_run_endpoints_bp
+from api.check_registry import dq_run_endpoints_bp
 from api.process_log import process_log_endpoints_bp
 
 
@@ -14,6 +15,7 @@ app = Flask(__name__)
 
 app.register_blueprint(dq_endpoints_bp, url_prefix='/api')
 app.register_blueprint(dq_run_endpoints_bp, url_prefix='/api')
+app.register_blueprint(check_registry_endpoints_bp, url_prefix='/api')
 app.register_blueprint(process_log_endpoints_bp, url_prefix='/api')
 
 @app.route("/")
